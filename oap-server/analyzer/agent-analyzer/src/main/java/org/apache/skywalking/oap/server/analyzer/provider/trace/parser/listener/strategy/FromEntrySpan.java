@@ -21,6 +21,8 @@ package org.apache.skywalking.oap.server.analyzer.provider.trace.parser.listener
 import org.apache.skywalking.apm.network.language.agent.v3.SpanObject;
 import org.apache.skywalking.apm.network.language.agent.v3.SpanType;
 
+import static org.apache.skywalking.oap.server.analyzer.provider.trace.parser.listener.strategy.SegmentStatusStrategy.overrideSpanStatusIfBusinessException;
+
 /**
  * FromEntrySpan means the status of the segment is the same as the status of the entry span. If the entry span does not
  * exist, the final state of the segment is successful.
@@ -29,6 +31,6 @@ public class FromEntrySpan implements SegmentStatusAnalyzer {
 
     @Override
     public boolean isError(final SpanObject spanObject) {
-        return spanObject.getSpanType().equals(SpanType.Entry) && spanObject.getIsError();
+        return spanObject.getSpanType().equals(SpanType.Entry) && spanObject.getIsError() && overrideSpanStatusIfBusinessException(spanObject);
     }
 }

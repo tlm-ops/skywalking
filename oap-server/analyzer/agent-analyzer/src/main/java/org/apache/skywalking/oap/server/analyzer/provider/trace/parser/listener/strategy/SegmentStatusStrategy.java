@@ -20,6 +20,10 @@ package org.apache.skywalking.oap.server.analyzer.provider.trace.parser.listener
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.apache.skywalking.apm.network.common.v3.KeyStringValuePair;
+import org.apache.skywalking.apm.network.language.agent.v3.SpanObject;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Define the available strategies for analysis segment status analysis.
@@ -51,5 +55,21 @@ public enum SegmentStatusStrategy {
             }
         }
         return FROM_SPAN_STATUS;
+    }
+
+    // if span is error, override span status by ignore BusinessException.
+    public static boolean overrideSpanStatusIfBusinessException(SpanObject spanObject) {
+        AtomicBoolean isError = new AtomicBoolean(false);
+        if (spanObject != null) {
+            spanObject.getLogsList().forEach(l -> {
+                for (KeyStringValuePair keyStringValuePair: l.getDataList()){
+                    if (keyStringValuePair.getKey().equals("error.kind") && keyStringValuePair.getValue().contains("BusinessException")) {
+                        isError.set(false);
+                        break;
+                    }
+                }
+            });
+        }
+        return isError.get();
     }
 }
