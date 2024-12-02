@@ -48,27 +48,31 @@ public class ElasticSearchIT {
 
     public static Collection<Object[]> versions() {
         // noinspection resource
-        return Arrays.asList(new Object[][]{
-                {
-                        new ElasticsearchContainer(
-                                DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch-oss")
-                                        .withTag("6.3.2")),
-                        ""},
-                {
-                        new ElasticsearchContainer(
-                                DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch-oss")
-                                        .withTag("6.3.2")),
-                        "test"},
-                {
-                        new ElasticsearchContainer(
-                                DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch-oss")
-                                        .withTag("7.8.0")),
-                        ""},
-                {
-                        new ElasticsearchContainer(
-                                DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch-oss")
-                                        .withTag("7.8.0")),
-                        "test"}
+        return Arrays.asList(new Object[][] {
+            {
+                new ElasticsearchContainer(
+                    DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch-oss")
+                                   .withTag("6.3.2")),
+                ""
+            },
+            {
+                new ElasticsearchContainer(
+                    DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch-oss")
+                                   .withTag("6.3.2")),
+                "test"
+            },
+            {
+                new ElasticsearchContainer(
+                    DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch-oss")
+                                   .withTag("7.8.0")),
+                ""
+            },
+            {
+                new ElasticsearchContainer(
+                    DockerImageName.parse("docker.elastic.co/elasticsearch/elasticsearch-oss")
+                                   .withTag("7.8.0")),
+                "test"
+            }
         });
     }
 
@@ -79,10 +83,10 @@ public class ElasticSearchIT {
         server.start();
 
         final ElasticSearchClient client = new ElasticSearchClient(
-                server.getHttpHostAddress(),
-                "http", "", "", "test", "test",
-                indexNameConverter(namespace), 500, 6000,
-                0, 15
+            server.getHttpHostAddress(),
+            "http", "", "", "test", "test",
+            indexNameConverter(namespace), 500, 6000,
+            0, 15, ""
         );
         client.connect();
 
@@ -131,10 +135,10 @@ public class ElasticSearchIT {
         server.start();
 
         final ElasticSearchClient client = new ElasticSearchClient(
-                server.getHttpHostAddress(),
-                "http", "", "", "test", "test",
-                indexNameConverter(namespace), 500, 6000,
-                0, 15
+            server.getHttpHostAddress(),
+            "http", "", "", "test", "test",
+            indexNameConverter(namespace), 500, 6000,
+            0, 15, ""
         );
         client.connect();
 
@@ -164,11 +168,11 @@ public class ElasticSearchIT {
         sourceBuilder.query(Query.term("user", "pengys"));
         SearchResponse searchResponse = client.search(indexName, sourceBuilder.build());
         Assertions.assertEquals("trying out Elasticsearch", searchResponse.getHits()
-                                                                      .getHits()
-                                                                      .iterator()
-                                                                      .next()
-                                                                      .getSource()
-                                                                      .get("message"));
+                                                                          .getHits()
+                                                                          .iterator()
+                                                                          .next()
+                                                                          .getSource()
+                                                                          .get("message"));
 
         client.shutdown();
         server.stop();
@@ -181,10 +185,10 @@ public class ElasticSearchIT {
         server.start();
 
         final ElasticSearchClient client = new ElasticSearchClient(
-                server.getHttpHostAddress(),
-                "http", "", "", "test", "test",
-                indexNameConverter(namespace), 500, 6000,
-                0, 15
+            server.getHttpHostAddress(),
+            "http", "", "", "test", "test",
+            indexNameConverter(namespace), 500, 6000,
+            0, 15, ""
         );
         client.connect();
 
@@ -236,10 +240,10 @@ public class ElasticSearchIT {
         server.start();
 
         final ElasticSearchClient client = new ElasticSearchClient(
-                server.getHttpHostAddress(),
-                "http", "", "", "test", "test",
-                indexNameConverter(namespace), 500, 6000,
-                0, 15
+            server.getHttpHostAddress(),
+            "http", "", "", "test", "test",
+            indexNameConverter(namespace), 500, 6000,
+            0, 15, ""
         );
         client.connect();
 
@@ -269,10 +273,10 @@ public class ElasticSearchIT {
         server.start();
 
         final ElasticSearchClient client = new ElasticSearchClient(
-                server.getHttpHostAddress(),
-                "http", "", "", "test", "test",
-                indexNameConverter(namespace), 500, 6000,
-                0, 15
+            server.getHttpHostAddress(),
+            "http", "", "", "test", "test",
+            indexNameConverter(namespace), 500, 6000,
+            0, 15, ""
         );
         client.connect();
 
@@ -298,10 +302,10 @@ public class ElasticSearchIT {
         server.start();
 
         final ElasticSearchClient client = new ElasticSearchClient(
-                server.getHttpHostAddress(),
-                "http", "", "", "test", "test",
-                indexNameConverter(namespace), 500, 6000,
-                0, 15
+            server.getHttpHostAddress(),
+            "http", "", "", "test", "test",
+            indexNameConverter(namespace), 500, 6000,
+            0, 15, ""
         );
         client.connect();
 

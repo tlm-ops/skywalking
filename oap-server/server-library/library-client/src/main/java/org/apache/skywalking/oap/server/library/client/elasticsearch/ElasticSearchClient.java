@@ -77,6 +77,8 @@ public class ElasticSearchClient implements Client, HealthCheckable {
     @Setter
     private volatile String password;
 
+    private final String insecureHosts;
+
     private final Function<String, String> indexNameConverter;
 
     private final DelegatedHealthChecker healthChecker = new DelegatedHealthChecker();
@@ -101,7 +103,8 @@ public class ElasticSearchClient implements Client, HealthCheckable {
                                int connectTimeout,
                                int socketTimeout,
                                int responseTimeout,
-                               int numHttpClientThread) {
+                               int numHttpClientThread,
+                               String insecureHosts) {
         this.clusterNodes = clusterNodes;
         this.protocol = protocol;
         this.trustStorePath = trustStorePath;
@@ -113,6 +116,7 @@ public class ElasticSearchClient implements Client, HealthCheckable {
         this.socketTimeout = socketTimeout;
         this.responseTimeout = responseTimeout;
         this.numHttpClientThread = numHttpClientThread;
+        this.insecureHosts = insecureHosts;
     }
 
     @Override
@@ -147,6 +151,10 @@ public class ElasticSearchClient implements Client, HealthCheckable {
         }
         if (!Strings.isNullOrEmpty(password)) {
             cb.password(password);
+        }
+
+        if (!Strings.isNullOrEmpty(insecureHosts)) {
+            cb.insecureHosts(insecureHosts);
         }
 
         final ElasticSearch newOne = cb.build();
@@ -209,10 +217,9 @@ public class ElasticSearchClient implements Client, HealthCheckable {
     }
 
     /**
-     * If your indexName is retrieved from elasticsearch through {@link
-     * #retrievalIndexByAliases(String)} or some other method and it already contains namespace.
-     * Then you should delete the index by this method, this method will no longer concatenate
-     * namespace.
+     * If your indexName is retrieved from elasticsearch through {@link #retrievalIndexByAliases(String)} or some other
+     * method and it already contains namespace. Then you should delete the index by this method, this method will no
+     * longer concatenate namespace.
      *
      * https://github.com/apache/skywalking/pull/3017
      */
@@ -263,7 +270,8 @@ public class ElasticSearchClient implements Client, HealthCheckable {
         return es.get().search(
             search,
             params,
-            indexNames);
+            indexNames
+        );
     }
 
     public SearchResponse search(String indexName, Search search) {
@@ -305,6 +313,7 @@ public class ElasticSearchClient implements Client, HealthCheckable {
 
     /**
      * Provide to get documents from multi indices by IDs.
+     *
      * @param indexIds key: indexName, value: ids list
      * @return Documents
      * @since 9.2.0
@@ -318,10 +327,11 @@ public class ElasticSearchClient implements Client, HealthCheckable {
     }
 
     /**
-     * Search by ids with index alias, when can not locate the physical index.
-     * Otherwise, recommend use method {@link #ids}
+     * Search by ids with index alias, when can not locate the physical index. Otherwise, recommend use method
+     * {@link #ids}
+     *
      * @param indexName Index alias name or physical name
-     * @param ids ID list
+     * @param ids       ID list
      * @return SearchResponse
      * @since 9.2.0 this method was ids
      */

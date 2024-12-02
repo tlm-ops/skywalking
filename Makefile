@@ -38,8 +38,8 @@ build.ui:
 
 DOCKER_BUILD_TOP:=${CONTEXT}/docker_build
 
-HUB ?= skywalking
-OAP_NAME ?= oap
+HUB ?=  wutang
+OAP_NAME ?= skywalking-oap-server
 UI_NAME ?= ui
 DATA_GENERATOR_NAME ?= data-generator
 TAG ?= latest
