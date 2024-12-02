@@ -27,7 +27,8 @@ public enum ScopeType {
     ENDPOINT(DefaultScopeDefine.ENDPOINT),
     PROCESS(DefaultScopeDefine.PROCESS),
     SERVICE_RELATION(DefaultScopeDefine.SERVICE_RELATION),
-    PROCESS_RELATION(DefaultScopeDefine.PROCESS_RELATION);
+    PROCESS_RELATION(DefaultScopeDefine.PROCESS_RELATION),
+    CACHE_RELATION(DefaultScopeDefine.CACHE_RELATION);
 
     @Getter
     private final int scopeId;

@@ -32,4 +32,6 @@ public class ComponentsDefine {
     public static final OfficialComponent ROCKET_MQ_CONSUMER = new OfficialComponent(39, "rocketMQ-consumer");
 
     public static final OfficialComponent MONGO_DRIVER = new OfficialComponent(42, "mongodb-driver");
+
+    public static final OfficialComponent REDIS = new OfficialComponent(7, "redis-cli");
 }

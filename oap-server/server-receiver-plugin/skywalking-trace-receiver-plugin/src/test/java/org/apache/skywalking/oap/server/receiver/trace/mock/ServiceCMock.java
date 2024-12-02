@@ -26,6 +26,9 @@ import org.apache.skywalking.apm.network.language.agent.v3.SegmentReference;
 import org.apache.skywalking.apm.network.language.agent.v3.SpanLayer;
 import org.apache.skywalking.apm.network.language.agent.v3.SpanObject;
 import org.apache.skywalking.apm.network.language.agent.v3.SpanType;
+import org.apache.skywalking.oap.server.analyzer.provider.trace.parser.SpanTags;
+
+import static org.apache.skywalking.oap.server.receiver.trace.mock.ServiceBMock.REDIS_CACHE_ADDRESS;
 
 class ServiceCMock {
     public static String SERVICE_NAME = "mock_c_service";
@@ -46,6 +49,7 @@ class ServiceCMock {
         segment.setService(SERVICE_NAME);
         segment.setServiceInstance(SERVICE_INSTANCE_NAME);
         segment.addSpans(createEntrySpan(startTimestamp, traceId, parentSegmentId));
+        segment.addSpans(createCacheExitSpan(startTimestamp));
 
         return segment;
     }
@@ -77,5 +81,22 @@ class ServiceCMock {
         reference.setNetworkAddressUsedAtPeer(ServiceBMock.ROCKET_MQ_ADDRESS);
         reference.setParentEndpoint(ServiceBMock.DUBBO_PROVIDER_ENDPOINT);
         return reference;
+    }
+
+    private SpanObject.Builder createCacheExitSpan(long startTimestamp) {
+        SpanObject.Builder span = SpanObject.newBuilder();
+        span.setSpanId(1);
+        span.setSpanType(SpanType.Exit);
+        span.setSpanLayer(SpanLayer.Cache);
+        span.setParentSpanId(1);
+        span.setStartTime(startTimestamp + 1100);
+        span.setEndTime(startTimestamp + 1500);
+        span.setComponentId(ComponentsDefine.REDIS.getId());
+        span.setIsError(false);
+        span.addTags(KeyStringValuePair.newBuilder().setKey(SpanTags.CACHE_TYPE).setValue("redis").build());
+
+        span.setOperationName("Get hello");
+        span.setPeer(REDIS_CACHE_ADDRESS);
+        return span;
     }
 }

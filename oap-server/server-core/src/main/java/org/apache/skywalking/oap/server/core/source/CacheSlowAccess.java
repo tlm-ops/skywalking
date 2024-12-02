@@ -66,5 +66,4 @@ public class CacheSlowAccess extends Source {
     public String getEntityId() {
         return Const.EMPTY_STRING;
     }
-
 }

@@ -62,7 +62,7 @@ public enum SegmentStatusStrategy {
         AtomicBoolean isError = new AtomicBoolean(false);
         if (spanObject != null) {
             spanObject.getLogsList().forEach(l -> {
-                for (KeyStringValuePair keyStringValuePair: l.getDataList()){
+                for (KeyStringValuePair keyStringValuePair: l.getDataList()) {
                     if (keyStringValuePair.getKey().equals("error.kind") && keyStringValuePair.getValue().contains("BusinessException")) {
                         isError.set(false);
                         break;

@@ -33,6 +33,7 @@ SRC_SERVICE_INSTANCE: 'ServiceInstance';
 SRC_TCP_SERVICE_INSTANCE: 'TCPServiceInstance';
 SRC_ENDPOINT: 'Endpoint';
 SRC_SERVICE_RELATION: 'ServiceRelation';
+SRC_CACHE_RELATION: 'CacheRelation';
 SRC_TCP_SERVICE_RELATION: 'TCPServiceRelation';
 SRC_SERVICE_INSTANCE_RELATION: 'ServiceInstanceRelation';
 SRC_TCP_SERVICE_INSTANCE_RELATION: 'TCPServiceInstanceRelation';
