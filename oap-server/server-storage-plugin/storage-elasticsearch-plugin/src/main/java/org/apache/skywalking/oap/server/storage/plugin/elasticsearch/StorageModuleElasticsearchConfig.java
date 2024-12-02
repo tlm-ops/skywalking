@@ -100,6 +100,7 @@ public class StorageModuleElasticsearchConfig extends ModuleConfig {
      * @since 7.0.0 This could be managed inside {@link #secretsManagementFile}
      */
     private String user;
+    private String insecureHosts;
     /**
      * @since 7.0.0 This could be managed inside {@link #secretsManagementFile}
      */

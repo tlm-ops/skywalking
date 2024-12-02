@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
 import javax.net.ssl.TrustManagerFactory;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.requireNonNull;
 
@@ -71,6 +72,8 @@ public final class ElasticSearchBuilder {
     private Consumer<Boolean> healthyListener;
 
     private int numHttpClientThread;
+
+    private String insecureHosts;
 
     public ElasticSearchBuilder protocol(String protocol) {
         checkArgument(StringUtil.isNotBlank(protocol), "protocol cannot be blank");
@@ -145,6 +148,11 @@ public final class ElasticSearchBuilder {
         return this;
     }
 
+    public ElasticSearchBuilder insecureHosts(String insecureHosts) {
+        this.insecureHosts = insecureHosts;
+        return this;
+    }
+
     @SneakyThrows
     public ElasticSearch build() {
         final List<Endpoint> endpoints =
@@ -158,6 +166,11 @@ public final class ElasticSearchBuilder {
                          .idleTimeout(socketTimeout)
                          .useHttp2Preface(false)
                          .workerGroup(numHttpClientThread > 0 ? numHttpClientThread : NUM_PROC);
+
+        if (StringUtil.isNotBlank(insecureHosts)) {
+            //factoryBuilder.tlsNoVerify();
+            factoryBuilder.tlsNoVerifyHosts(insecureHosts.split(","));
+        }
 
         if (StringUtil.isNotBlank(trustStorePath)) {
             final TrustManagerFactory trustManagerFactory =

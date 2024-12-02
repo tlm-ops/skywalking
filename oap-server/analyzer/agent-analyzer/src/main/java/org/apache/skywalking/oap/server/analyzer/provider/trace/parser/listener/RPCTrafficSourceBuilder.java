@@ -22,7 +22,12 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.skywalking.oap.server.core.analysis.Layer;
 import org.apache.skywalking.oap.server.core.config.NamingControl;
-import org.apache.skywalking.oap.server.core.source.*;
+import org.apache.skywalking.oap.server.core.source.Service;
+import org.apache.skywalking.oap.server.core.source.ServiceInstance;
+import org.apache.skywalking.oap.server.core.source.ServiceRelation;
+import org.apache.skywalking.oap.server.core.source.ServiceInstanceRelation;
+import org.apache.skywalking.oap.server.core.source.EndpointRelation;
+import org.apache.skywalking.oap.server.core.source.CacheRelation;
 import org.apache.skywalking.oap.server.library.util.StringUtil;
 
 /**
