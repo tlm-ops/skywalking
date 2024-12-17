@@ -54,6 +54,7 @@ public class DefaultScopeDefine {
     public static final int SERVICE_RELATION = 4;
     public static final int SERVICE_INSTANCE_RELATION = 5;
     public static final int ENDPOINT_RELATION = 6;
+    public static final int CACHE_RELATION = 7;
     public static final int SERVICE_INSTANCE_JVM_CPU = 8;
     public static final int SERVICE_INSTANCE_JVM_MEMORY = 9;
     public static final int SERVICE_INSTANCE_JVM_MEMORY_POOL = 10;
@@ -134,6 +135,7 @@ public class DefaultScopeDefine {
     public static final String SERVICE_INSTANCE_CATALOG_NAME = "SERVICE_INSTANCE";
     public static final String ENDPOINT_CATALOG_NAME = "ENDPOINT";
     public static final String SERVICE_RELATION_CATALOG_NAME = "SERVICE_RELATION";
+    public static final String CACHE_RELATION_CATALOG_NAME = "CACHE_RELATION";
     public static final String SERVICE_INSTANCE_RELATION_CATALOG_NAME = "SERVICE_INSTANCE_RELATION";
     public static final String ENDPOINT_RELATION_CATALOG_NAME = "ENDPOINT_RELATION";
     public static final String PROCESS_CATALOG_NAME = "PROCESS";
@@ -143,6 +145,7 @@ public class DefaultScopeDefine {
     private static final Map<Integer, Boolean> SERVICE_INSTANCE_CATALOG = new HashMap<>();
     private static final Map<Integer, Boolean> ENDPOINT_CATALOG = new HashMap<>();
     private static final Map<Integer, Boolean> SERVICE_RELATION_CATALOG = new HashMap<>();
+    private static final Map<Integer, Boolean> CACHE_RELATION_CATALOG = new HashMap<>();
     private static final Map<Integer, Boolean> SERVICE_INSTANCE_RELATION_CATALOG = new HashMap<>();
     private static final Map<Integer, Boolean> ENDPOINT_RELATION_CATALOG = new HashMap<>();
     private static final Map<Integer, Boolean> PROCESS_CATALOG = new HashMap<>();
@@ -253,6 +256,9 @@ public class DefaultScopeDefine {
                 break;
             case PROCESS_RELATION_CATALOG_NAME:
                 PROCESS_RELATION_CATALOG.put(id, Boolean.TRUE);
+                break;
+            case CACHE_RELATION_CATALOG_NAME:
+                CACHE_RELATION_CATALOG.put(id, Boolean.TRUE);
                 break;
         }
     }

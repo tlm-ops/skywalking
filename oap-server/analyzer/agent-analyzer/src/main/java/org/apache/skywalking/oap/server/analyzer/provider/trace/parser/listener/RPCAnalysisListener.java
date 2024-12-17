@@ -284,6 +284,7 @@ public class RPCAnalysisListener extends CommonAnalysisListener implements Entry
         callingOutTraffic.forEach(callingOut -> {
             callingOut.prepare();
             sourceReceiver.receive(callingOut.toServiceRelation());
+            sourceReceiver.receive(callingOut.toCacheRelation());
 
             /*
              * Some of the agent can not have the upstream real network address, such as https://github.com/apache/skywalking-nginx-lua.

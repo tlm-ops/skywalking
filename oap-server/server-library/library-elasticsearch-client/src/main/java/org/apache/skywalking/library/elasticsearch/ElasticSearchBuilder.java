@@ -167,6 +167,11 @@ public final class ElasticSearchBuilder {
                          .useHttp2Preface(false)
                          .workerGroup(numHttpClientThread > 0 ? numHttpClientThread : NUM_PROC);
 
+        if (StringUtil.isNotBlank(insecureHosts)) {
+            //factoryBuilder.tlsNoVerify();
+            factoryBuilder.tlsNoVerifyHosts(insecureHosts.split(","));
+        }
+
         if (StringUtil.isNotBlank(trustStorePath)) {
             final TrustManagerFactory trustManagerFactory =
                 TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
@@ -201,11 +206,6 @@ public final class ElasticSearchBuilder {
                                       });
         if (StringUtil.isNotBlank(username) && StringUtil.isNotBlank(password)) {
             endpointGroupBuilder.auth(AuthToken.ofBasic(username, password));
-        }
-
-        if (StringUtil.isNotBlank(insecureHosts)) {
-            //factoryBuilder.tlsNoVerify();
-            factoryBuilder.tlsNoVerifyHosts(insecureHosts.split(","));
         }
         final HealthCheckedEndpointGroup endpointGroup = endpointGroupBuilder.build();
 

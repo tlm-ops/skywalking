@@ -26,6 +26,7 @@ import org.apache.skywalking.apm.network.language.agent.v3.SegmentReference;
 import org.apache.skywalking.apm.network.language.agent.v3.SpanLayer;
 import org.apache.skywalking.apm.network.language.agent.v3.SpanObject;
 import org.apache.skywalking.apm.network.language.agent.v3.SpanType;
+import org.apache.skywalking.oap.server.analyzer.provider.trace.parser.SpanTags;
 
 class ServiceBMock {
     public static String SERVICE_NAME = "mock_b_service";
@@ -34,6 +35,7 @@ class ServiceBMock {
     static String DUBBO_PROVIDER_ENDPOINT = "org.skywaking.apm.testcase.dubbo.services.GreetServiceImpl.doBusiness()";
     static String ROCKET_MQ_ENDPOINT = "org.apache.skywalking.RocketMQ";
     static String ROCKET_MQ_ADDRESS = "RocketMQAddress:2000";
+    static String REDIS_CACHE_ADDRESS = "RedisAddress:6379";
 
     void mock(StreamObserver<SegmentObject> streamObserver, String traceId,
               String segmentId, String parentSegmentId, long startTimestamp) {
@@ -52,6 +54,7 @@ class ServiceBMock {
         segment.addSpans(createEntrySpan(startTimestamp, traceId, parentSegmentId));
         segment.addSpans(createExitSpan(startTimestamp));
         segment.addSpans(createMQExitSpan(startTimestamp));
+        segment.addSpans(createCacheExitSpan(startTimestamp));
 
         return segment;
     }
@@ -97,13 +100,13 @@ class ServiceBMock {
         span.setComponentId(ComponentsDefine.MONGO_DRIVER.getId());
         span.setIsError(true);
         span.addTags(KeyStringValuePair.newBuilder()
-                                       .setKey("db.statement")
-                                       .setValue("select * from database where complex = 1;")
-                                       .build());
+                .setKey("db.statement")
+                .setValue("select * from database where complex = 1;")
+                .build());
         span.addTags(KeyStringValuePair.newBuilder().setKey("db.type").setValue("mongodb").build());
 
         span.setOperationName(
-            "mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]");
+                "mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]");
         span.setPeer("localhost:27017");
         return span;
     }
@@ -121,6 +124,23 @@ class ServiceBMock {
 
         span.setOperationName(ROCKET_MQ_ENDPOINT);
         span.setPeer(ROCKET_MQ_ADDRESS);
+        return span;
+    }
+
+    private SpanObject.Builder createCacheExitSpan(long startTimestamp) {
+        SpanObject.Builder span = SpanObject.newBuilder();
+        span.setSpanId(3);
+        span.setSpanType(SpanType.Exit);
+        span.setSpanLayer(SpanLayer.Cache);
+        span.setParentSpanId(1);
+        span.setStartTime(startTimestamp + 1100);
+        span.setEndTime(startTimestamp + 1500);
+        span.setComponentId(ComponentsDefine.REDIS.getId());
+        span.setIsError(false);
+        span.addTags(KeyStringValuePair.newBuilder().setKey(SpanTags.CACHE_TYPE).setValue("redis").build());
+
+        span.setOperationName("Get hello");
+        span.setPeer(REDIS_CACHE_ADDRESS);
         return span;
     }
 }

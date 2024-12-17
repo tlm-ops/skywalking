@@ -83,6 +83,12 @@ cache_access_sla = from(CacheAccess.*).percent(status == true);
 cache_access_cpm = from(CacheAccess.*).cpm();
 cache_access_percentile = from(CacheAccess.latency).percentile(10);
 
+// CacheRelation relation scope metrics
+cache_relation_client_side_cpm = from(CacheRelation.*).filter(detectPoint == DetectPoint.CLIENT).cpm();
+cache_relation_client_side_resp_time = from(CacheRelation.latency).filter(detectPoint == DetectPoint.CLIENT).longAvg();
+cache_relation_client_side_sla = from(CacheRelation.*).filter(detectPoint == DetectPoint.CLIENT).percent(status == true);
+cache_relation_client_side_percentile = from(CacheRelation.latency).filter(detectPoint == DetectPoint.CLIENT).percentile(10); // Multiple values including p50, p75, p90, p95, p99
+
 mq_service_consume_cpm = from(MQAccess.*).filter(operation == MQOperation.Consume).cpm();
 mq_service_consume_sla = from(MQAccess.*).filter(operation == MQOperation.Consume).percent(status == true);
 mq_service_consume_latency = from(MQAccess.transmissionLatency).filter(operation == MQOperation.Consume).longAvg();

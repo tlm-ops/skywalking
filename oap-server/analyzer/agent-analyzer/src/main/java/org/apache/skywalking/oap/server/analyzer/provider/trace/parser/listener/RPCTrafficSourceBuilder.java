@@ -22,11 +22,12 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.skywalking.oap.server.core.analysis.Layer;
 import org.apache.skywalking.oap.server.core.config.NamingControl;
-import org.apache.skywalking.oap.server.core.source.EndpointRelation;
 import org.apache.skywalking.oap.server.core.source.Service;
 import org.apache.skywalking.oap.server.core.source.ServiceInstance;
-import org.apache.skywalking.oap.server.core.source.ServiceInstanceRelation;
 import org.apache.skywalking.oap.server.core.source.ServiceRelation;
+import org.apache.skywalking.oap.server.core.source.ServiceInstanceRelation;
+import org.apache.skywalking.oap.server.core.source.EndpointRelation;
+import org.apache.skywalking.oap.server.core.source.CacheRelation;
 import org.apache.skywalking.oap.server.library.util.StringUtil;
 
 /**
@@ -200,5 +201,25 @@ class RPCTrafficSourceBuilder extends EndpointSourceBuilder {
         endpointRelation.setDetectPoint(detectPoint);
         endpointRelation.setTimeBucket(timeBucket);
         return endpointRelation;
+    }
+
+    /**
+     * Service topology meta and metrics related source. The metrics base on the OAL scripts.
+     */
+    CacheRelation toCacheRelation() {
+        if (destLayer != Layer.CACHE && destLayer != Layer.VIRTUAL_CACHE) {
+            return null;
+        }
+        CacheRelation cacheRelation = new CacheRelation();
+        cacheRelation.setSourceServiceName(sourceServiceName);
+        cacheRelation.setSourceLayer(sourceLayer);
+        cacheRelation.setDestServiceName(destServiceName);
+        cacheRelation.setDestLayer(destLayer);
+        cacheRelation.setComponentId(componentId);
+        cacheRelation.setLatency(latency);
+        cacheRelation.setStatus(status);
+        cacheRelation.setDetectPoint(detectPoint);
+        cacheRelation.setTimeBucket(timeBucket);
+        return cacheRelation;
     }
 }
