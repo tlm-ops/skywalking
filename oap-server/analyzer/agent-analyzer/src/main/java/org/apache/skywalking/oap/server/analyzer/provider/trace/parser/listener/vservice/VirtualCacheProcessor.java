@@ -72,7 +72,10 @@ public class VirtualCacheProcessor implements VirtualServiceProcessor {
             peer = tags.get(SpanTags.CACHE_TYPE) + "-local";
         }
         long timeBucket = TimeBucket.getMinuteTimeBucket(span.getStartTime());
-        String serviceName = namingControl.formatServiceName(peer);
+        // The length of the service name in the virtual cache cannot be set independently.
+        // But in general, it's not more than 200
+        //String serviceName = namingControl.formatServiceName(peer);
+        String serviceName = peer;
         int latency = (int) (span.getEndTime() - span.getStartTime());
         sourceList.add(parseServiceMeta(serviceName, timeBucket));
         VirtualCacheOperation op = parseOperation(tags.get(SpanTags.CACHE_OP));

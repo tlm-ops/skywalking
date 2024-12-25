@@ -41,6 +41,9 @@ class RPCTrafficSourceBuilder extends EndpointSourceBuilder {
     private String sourceServiceName;
     @Getter
     @Setter
+    private String sourceServiceFullName;
+    @Getter
+    @Setter
     private Layer sourceLayer;
     @Getter
     @Setter
@@ -74,6 +77,7 @@ class RPCTrafficSourceBuilder extends EndpointSourceBuilder {
     }
 
     void prepare() {
+        this.sourceServiceFullName = sourceServiceName;
         this.sourceServiceName = namingControl.formatServiceName(sourceServiceName);
         this.sourceEndpointOwnerServiceName = namingControl.formatServiceName(sourceEndpointOwnerServiceName);
         this.sourceServiceInstanceName = namingControl.formatInstanceName(sourceServiceInstanceName);
@@ -211,7 +215,7 @@ class RPCTrafficSourceBuilder extends EndpointSourceBuilder {
             return null;
         }
         CacheRelation cacheRelation = new CacheRelation();
-        cacheRelation.setSourceServiceName(sourceServiceName);
+        cacheRelation.setSourceServiceName(sourceServiceFullName);
         cacheRelation.setSourceLayer(sourceLayer);
         cacheRelation.setDestServiceName(destServiceName);
         cacheRelation.setDestLayer(destLayer);
