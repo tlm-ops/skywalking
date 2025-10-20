@@ -95,41 +95,41 @@
     <build>
         <finalName>skywalking-webapp</finalName>
         <plugins>
-            <plugin>
-                <groupId>com.github.eirslett</groupId>
-                <artifactId>frontend-maven-plugin</artifactId>
-                <version>${frontend-maven-plugin.version}</version>
-                <configuration>
-                    <workingDirectory>${ui.path}</workingDirectory>
-                    <nodeVersion>v22.14.0</nodeVersion>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>install node and npm</id>
-                        <goals>
-                            <goal>install-node-and-npm</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>npm ci</id>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>ci --registry=https://registry.npmjs.org/</arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>npm run build</id>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>run build</arguments>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>com.github.eirslett</groupId>-->
+<!--                <artifactId>frontend-maven-plugin</artifactId>-->
+<!--                <version>${frontend-maven-plugin.version}</version>-->
+<!--                <configuration>-->
+<!--                    <workingDirectory>${ui.path}</workingDirectory>-->
+<!--                    <nodeVersion>v22.14.0</nodeVersion>-->
+<!--                </configuration>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>install node and npm</id>-->
+<!--                        <goals>-->
+<!--                            <goal>install-node-and-npm</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                    <execution>-->
+<!--                        <id>npm ci</id>-->
+<!--                        <goals>-->
+<!--                            <goal>npm</goal>-->
+<!--                        </goals>-->
+<!--                        <configuration>-->
+<!--                            <arguments>ci &#45;&#45;registry=https://registry.npmjs.org/</arguments>-->
+<!--                        </configuration>-->
+<!--                    </execution>-->
+<!--                    <execution>-->
+<!--                        <id>npm run build</id>-->
+<!--                        <goals>-->
+<!--                            <goal>npm</goal>-->
+<!--                        </goals>-->
+<!--                        <configuration>-->
+<!--                            <arguments>run build</arguments>-->
+<!--                        </configuration>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <configuration>
