@@ -68,6 +68,8 @@ public final class ElasticSearchBuilder {
 
     private Duration socketTimeout = Duration.ofSeconds(30);
 
+    private String insecureHosts;
+
     private Consumer<Boolean> healthyListener;
 
     private int numHttpClientThread;
@@ -145,6 +147,11 @@ public final class ElasticSearchBuilder {
         return this;
     }
 
+    public ElasticSearchBuilder insecureHosts(String insecureHosts) {
+        this.insecureHosts = insecureHosts;
+        return this;
+    }
+
     @SneakyThrows
     public ElasticSearch build() {
         final List<Endpoint> endpoints =
@@ -158,6 +165,11 @@ public final class ElasticSearchBuilder {
                          .idleTimeout(socketTimeout)
                          .useHttp2Preface(false)
                          .workerGroup(numHttpClientThread > 0 ? numHttpClientThread : NUM_PROC);
+
+        if (StringUtil.isNotBlank(insecureHosts)) {
+            //factoryBuilder.tlsNoVerify();
+            factoryBuilder.tlsNoVerifyHosts(insecureHosts.split(","));
+        }
 
         if (StringUtil.isNotBlank(trustStorePath)) {
             final TrustManagerFactory trustManagerFactory =

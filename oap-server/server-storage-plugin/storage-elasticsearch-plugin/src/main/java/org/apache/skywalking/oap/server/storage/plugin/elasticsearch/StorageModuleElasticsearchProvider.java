@@ -182,7 +182,7 @@ public class StorageModuleElasticsearchProvider extends ModuleProvider {
             .getTrustStorePass(), config.getUser(), config.getPassword(),
             indexNameConverter(config.getNamespace()), config.getConnectTimeout(),
             config.getSocketTimeout(), config.getResponseTimeout(),
-            config.getNumHttpClientThread()
+            config.getNumHttpClientThread(),config.getInsecureHosts()
         );
         modelInstaller = new StorageEsInstaller(elasticSearchClient, getManager(), config);
 

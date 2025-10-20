@@ -104,6 +104,8 @@ public class StorageModuleElasticsearchConfig extends ModuleConfig {
      * @since 7.0.0 This could be managed inside {@link #secretsManagementFile}
      */
     private String password;
+
+    private String insecureHosts;
     /**
      * Secrets management file includes the username, password, which are managed by 3rd party tool.
      */
