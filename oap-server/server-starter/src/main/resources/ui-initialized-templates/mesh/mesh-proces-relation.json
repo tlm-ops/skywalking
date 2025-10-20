@@ -1,23 +1,6 @@
-/**
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 [
   {
-    "id": "82162975-3a75-4cc8-b89c-be1d1dc2ff82",
+    "id": "Mesh-Process-Relation-Metrics",
     "configuration": {
       "children": [
         {
@@ -38,12 +21,6 @@
                   "h": 11,
                   "i": "0",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_client_write_cpm"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -90,6 +67,9 @@
                     {
                       "widgetId": "29"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_client_write_cpm"
                   ]
                 },
                 {
@@ -99,12 +79,6 @@
                   "h": 11,
                   "i": "1",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_server_write_cpm"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -151,6 +125,9 @@
                     {
                       "widgetId": "29"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_server_write_cpm"
                   ]
                 },
                 {
@@ -160,12 +137,6 @@
                   "h": 11,
                   "i": "2",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_client_read_cpm"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -200,6 +171,9 @@
                     {
                       "widgetId": "25"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_client_read_cpm"
                   ]
                 },
                 {
@@ -209,12 +183,6 @@
                   "h": 11,
                   "i": "3",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_server_read_cpm"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -248,6 +216,9 @@
                     {
                       "widgetId": "25"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_server_read_cpm"
                   ]
                 },
                 {
@@ -257,12 +228,6 @@
                   "h": 11,
                   "i": "4",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_client_write_total_bytes"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -275,14 +240,9 @@
                     "title": "Write Package Size (Client) (KB)",
                     "name": "write_package_size_client"
                   },
-                  "metricConfig": [
-                    {
-                      "unit": "KB",
-                      "calculation": "byteToKB"
-                    }
-                  ],
-                  "associate": [
-
+                  "associate": [],
+                  "expressions": [
+                    "process_relation_client_write_total_bytes/1024"
                   ]
                 },
                 {
@@ -292,12 +252,6 @@
                   "h": 11,
                   "i": "5",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_client_read_total_bytes"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -310,12 +264,6 @@
                     "title": "Read Package Size (Client) (KB)",
                     "name": "read_package_szie_client"
                   },
-                  "metricConfig": [
-                    {
-                      "unit": "KB",
-                      "calculation": "byteToKB"
-                    }
-                  ],
                   "associate": [
                     {
                       "widgetId": "2"
@@ -338,6 +286,9 @@
                     {
                       "widgetId": "25"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_client_read_total_bytes/1024"
                   ]
                 },
                 {
@@ -347,12 +298,6 @@
                   "h": 11,
                   "i": "6",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_server_write_total_bytes"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -361,12 +306,6 @@
                     "showXAxis": true,
                     "showYAxis": true
                   },
-                  "metricConfig": [
-                    {
-                      "unit": "KB",
-                      "calculation": "byteToKB"
-                    }
-                  ],
                   "widget": {
                     "title": "Write Package Size (Server) (KB)",
                     "name": "write_package_size_server"
@@ -405,6 +344,9 @@
                     {
                       "widgetId": "29"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_server_write_total_bytes/1024"
                   ]
                 },
                 {
@@ -414,12 +356,6 @@
                   "h": 11,
                   "i": "7",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_server_read_total_bytes"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -428,12 +364,6 @@
                     "showXAxis": true,
                     "showYAxis": true
                   },
-                  "metricConfig": [
-                    {
-                      "unit": "KB",
-                      "calculation": "byteToKB"
-                    }
-                  ],
                   "widget": {
                     "title": "Read Package Size (Server) (KB)",
                     "name": "read_package_size_server"
@@ -460,6 +390,9 @@
                     {
                       "widgetId": "25"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_server_read_total_bytes/1024"
                   ]
                 },
                 {
@@ -469,12 +402,6 @@
                   "h": 11,
                   "i": "8",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_client_write_avg_exe_time"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -487,12 +414,6 @@
                     "title": "Write OP Avg Time (Client) (ms)",
                     "name": "write_avg_time_client"
                   },
-                  "metricConfig": [
-                    {
-                      "calculation": "nanosecondToMillisecond",
-                      "unit": "ms"
-                    }
-                  ],
                   "associate": [
                     {
                       "widgetId": "1"
@@ -527,6 +448,9 @@
                     {
                       "widgetId": "29"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_client_write_avg_exe_time/1000000"
                   ]
                 },
                 {
@@ -536,12 +460,6 @@
                   "h": 11,
                   "i": "9",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_client_read_avg_exe_time"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -554,12 +472,6 @@
                     "title": "Read OP Avg Time (Client) (ms)",
                     "name": "read_avg_time_client"
                   },
-                  "metricConfig": [
-                    {
-                      "calculation": "nanosecondToMillisecond",
-                      "unit": "ms"
-                    }
-                  ],
                   "associate": [
                     {
                       "widgetId": "2"
@@ -582,6 +494,9 @@
                     {
                       "widgetId": "25"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_client_read_avg_exe_time/1000000"
                   ]
                 },
                 {
@@ -591,12 +506,6 @@
                   "h": 11,
                   "i": "10",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_server_write_avg_exe_time"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -609,14 +518,9 @@
                     "title": "Write OP Avg Time (Server) (ms)",
                     "name": "write_avg_time_server"
                   },
-                  "metricConfig": [
-                    {
-                      "unit": "ms",
-                      "calculation": "nanosecondToMillisecond"
-                    }
-                  ],
-                  "associate": [
-
+                  "associate": [],
+                  "expressions": [
+                    "process_relation_server_write_avg_exe_time/1000000"
                   ]
                 },
                 {
@@ -626,12 +530,6 @@
                   "h": 11,
                   "i": "11",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_server_read_avg_exe_time"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -644,12 +542,6 @@
                     "title": "Read OP Avg Time (Server) (ms)",
                     "name": "read_avg_time_server"
                   },
-                  "metricConfig": [
-                    {
-                      "calculation": "nanosecondToMillisecond",
-                      "unit": "ms"
-                    }
-                  ],
                   "associate": [
                     {
                       "widgetId": "2"
@@ -672,6 +564,9 @@
                     {
                       "widgetId": "25"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_server_read_avg_exe_time/1000000"
                   ]
                 },
                 {
@@ -681,12 +576,6 @@
                   "h": 11,
                   "i": "12",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_client_connect_cpm"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -709,6 +598,9 @@
                     {
                       "widgetId": "15"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_client_connect_cpm"
                   ]
                 },
                 {
@@ -718,12 +610,6 @@
                   "h": 11,
                   "i": "13",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_client_connect_exe_time"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -736,12 +622,6 @@
                     "title": "Connect Avg Time (Client) (ms)",
                     "name": "connect_avg_time_client"
                   },
-                  "metricConfig": [
-                    {
-                      "calculation": "nanosecondToMillisecond",
-                      "unit": "ms"
-                    }
-                  ],
                   "associate": [
                     {
                       "widgetId": "12"
@@ -752,6 +632,9 @@
                     {
                       "widgetId": "15"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_client_connect_exe_time/1000000"
                   ]
                 },
                 {
@@ -761,12 +644,6 @@
                   "h": 11,
                   "i": "14",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_server_connect_cpm"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -789,6 +666,9 @@
                     {
                       "widgetId": "15"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_server_connect_cpm"
                   ]
                 },
                 {
@@ -798,12 +678,6 @@
                   "h": 11,
                   "i": "15",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_server_connect_avg_exe_time"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -816,12 +690,6 @@
                     "title": "Connect Avg Time (Server) (ms)",
                     "name": "connect_avg_time_server"
                   },
-                  "metricConfig": [
-                    {
-                      "calculation": "nanosecondToMillisecond",
-                      "unit": "ms"
-                    }
-                  ],
                   "associate": [
                     {
                       "widgetId": "13"
@@ -832,6 +700,9 @@
                     {
                       "widgetId": "12"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_server_connect_avg_exe_time/1000000"
                   ]
                 },
                 {
@@ -841,12 +712,6 @@
                   "h": 11,
                   "i": "16",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_client_close_cpm"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -869,6 +734,9 @@
                     {
                       "widgetId": "19"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_client_close_cpm"
                   ]
                 },
                 {
@@ -878,12 +746,6 @@
                   "h": 11,
                   "i": "17",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_client_close_avg_exe_time"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -896,12 +758,6 @@
                     "title": "Close Avg Time (Client) (ms)",
                     "name": "close_avg_time_client"
                   },
-                  "metricConfig": [
-                    {
-                      "calculation": "nanosecondToMillisecond",
-                      "unit": "ms"
-                    }
-                  ],
                   "associate": [
                     {
                       "widgetId": "16"
@@ -912,6 +768,9 @@
                     {
                       "widgetId": "19"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_client_close_avg_exe_time/1000000"
                   ]
                 },
                 {
@@ -921,12 +780,6 @@
                   "h": 11,
                   "i": "18",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_server_close_cpm"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -949,6 +802,9 @@
                     {
                       "widgetId": "19"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_server_close_cpm"
                   ]
                 },
                 {
@@ -958,12 +814,6 @@
                   "h": 11,
                   "i": "19",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_server_close_avg_exe_time"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -976,12 +826,6 @@
                     "title": "Close Avg Time (Server) (ms)",
                     "name": "close_avg_time_server"
                   },
-                  "metricConfig": [
-                    {
-                      "calculation": "nanosecondToMillisecond",
-                      "unit": "ms"
-                    }
-                  ],
                   "associate": [
                     {
                       "widgetId": "17"
@@ -992,6 +836,9 @@
                     {
                       "widgetId": "16"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_server_close_avg_exe_time/1000000"
                   ]
                 },
                 {
@@ -1001,12 +848,6 @@
                   "h": 11,
                   "i": "20",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readLabeledMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_client_write_rtt_time_percentile"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -1019,11 +860,6 @@
                     "title": "Write OP RTT Percentile (client) (microsecond)",
                     "name": "write_rtt_percentile_client"
                   },
-                  "metricConfig": [
-                    {
-                      "unit": "ns"
-                    }
-                  ],
                   "associate": [
                     {
                       "widgetId": "1"
@@ -1058,6 +894,9 @@
                     {
                       "widgetId": "29"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_client_write_rtt_time_percentile"
                   ]
                 },
                 {
@@ -1067,12 +906,6 @@
                   "h": 11,
                   "i": "21",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readLabeledMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_server_write_rtt_time_percentile"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -1119,6 +952,9 @@
                     {
                       "widgetId": "29"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_server_write_rtt_time_percentile"
                   ]
                 },
                 {
@@ -1128,12 +964,6 @@
                   "h": 11,
                   "i": "22",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readLabeledMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_client_write_exe_time_percentile"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -1146,11 +976,6 @@
                     "title": "Write OP Exe Time Percentile (client) (ms)",
                     "name": "write_exe_time_percentile_client"
                   },
-                  "metricConfig": [
-                    {
-                      "calculation": "nanosecondToMillisecond"
-                    }
-                  ],
                   "associate": [
                     {
                       "widgetId": "1"
@@ -1185,6 +1010,9 @@
                     {
                       "widgetId": "29"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_client_write_exe_time_percentile/1000000"
                   ]
                 },
                 {
@@ -1194,12 +1022,6 @@
                   "h": 11,
                   "i": "23",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readLabeledMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_server_write_exe_time_percentile"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -1212,11 +1034,6 @@
                     "title": "Write OP Exe Time Percentile (server) (ms)",
                     "name": "write_exe_time_percentile_server"
                   },
-                  "metricConfig": [
-                    {
-                      "calculation": "nanosecondToMillisecond"
-                    }
-                  ],
                   "associate": [
                     {
                       "widgetId": "1"
@@ -1251,6 +1068,9 @@
                     {
                       "widgetId": "29"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_server_write_exe_time_percentile/1000000"
                   ]
                 },
                 {
@@ -1260,12 +1080,6 @@
                   "h": 11,
                   "i": "24",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readLabeledMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_client_read_exe_time_percentile"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -1278,11 +1092,6 @@
                     "title": "Read OP Exe Time Percentile (client) (ms)",
                     "name": "read_exe_time_percentile_client"
                   },
-                  "metricConfig": [
-                    {
-                      "calculation": "nanosecondToMillisecond"
-                    }
-                  ],
                   "associate": [
                     {
                       "widgetId": "2"
@@ -1305,6 +1114,9 @@
                     {
                       "widgetId": "25"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_client_read_exe_time_percentile/1000000"
                   ]
                 },
                 {
@@ -1314,12 +1126,6 @@
                   "h": 11,
                   "i": "25",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readLabeledMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_server_read_exe_time_percentile"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -1332,11 +1138,6 @@
                     "title": "Read OP Exe Time Percentile (server) (ms)",
                     "name": "read_exe_time_percentile_server"
                   },
-                  "metricConfig": [
-                    {
-                      "calculation": "nanosecondToMillisecond"
-                    }
-                  ],
                   "associate": [
                     {
                       "widgetId": "2"
@@ -1359,6 +1160,9 @@
                     {
                       "widgetId": "3"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_server_read_exe_time_percentile/1000000"
                   ]
                 },
                 {
@@ -1368,12 +1172,6 @@
                   "h": 11,
                   "i": "28",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_client_write_avg_rtt_time"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -1420,6 +1218,9 @@
                     {
                       "widgetId": "29"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_client_write_avg_rtt_time"
                   ]
                 },
                 {
@@ -1429,12 +1230,6 @@
                   "h": 11,
                   "i": "29",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_server_write_avg_rtt_time"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -1481,6 +1276,9 @@
                     {
                       "widgetId": "0"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_server_write_avg_rtt_time"
                   ]
                 }
               ]
@@ -1495,12 +1293,6 @@
                   "h": 11,
                   "i": "0",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_http1_request_cpm"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -1541,6 +1333,9 @@
                     {
                       "widgetId": "30-1-9"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_http1_request_cpm"
                   ]
                 },
                 {
@@ -1550,12 +1345,6 @@
                   "h": 11,
                   "i": "1",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readLabeledMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_http1_response_status_cpm"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -1596,6 +1385,9 @@
                     {
                       "widgetId": "30-1-9"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_http1_response_status_cpm"
                   ]
                 },
                 {
@@ -1605,12 +1397,6 @@
                   "h": 11,
                   "i": "2",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_http1_request_package_size"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -1623,11 +1409,6 @@
                     "title": "Request Package Avg Size (KB)",
                     "name": "http1-request-package-avg-size"
                   },
-                  "metricConfig": [
-                    {
-                      "calculation": "byteToKB"
-                    }
-                  ],
                   "associate": [
                     {
                       "widgetId": "30-1-1"
@@ -1656,6 +1437,9 @@
                     {
                       "widgetId": "30-1-9"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_http1_request_package_size/1024"
                   ]
                 },
                 {
@@ -1665,12 +1449,6 @@
                   "h": 11,
                   "i": "3",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_http1_response_package_size"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -1683,11 +1461,6 @@
                     "title": "Response Package Avg Size (KB)",
                     "name": "http1-response-package-avg-size"
                   },
-                  "metricConfig": [
-                    {
-                      "calculation": "byteToKB"
-                    }
-                  ],
                   "associate": [
                     {
                       "widgetId": "30-1-1"
@@ -1716,6 +1489,9 @@
                     {
                       "widgetId": "30-1-9"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_http1_response_package_size/1024"
                   ]
                 },
                 {
@@ -1725,12 +1501,6 @@
                   "h": 11,
                   "i": "4",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readLabeledMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_http1_request_package_size_percentile"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -1743,11 +1513,6 @@
                     "title": "Request Package Size Percentile (KB)",
                     "name": "http1-request-package-size-percentile"
                   },
-                  "metricConfig": [
-                    {
-                      "calculation": "byteToKB"
-                    }
-                  ],
                   "associate": [
                     {
                       "widgetId": "30-1-1"
@@ -1776,6 +1541,9 @@
                     {
                       "widgetId": "30-1-9"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_http1_request_package_size_percentile/1024"
                   ]
                 },
                 {
@@ -1785,12 +1553,6 @@
                   "h": 11,
                   "i": "5",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readLabeledMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_http1_response_package_size_percentile"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -1803,11 +1565,6 @@
                     "title": "Response Package Size Percentile (KB)",
                     "name": "http1-response-package-size-percentile"
                   },
-                  "metricConfig": [
-                    {
-                      "calculation": "byteToKB"
-                    }
-                  ],
                   "associate": [
                     {
                       "widgetId": "30-1-1"
@@ -1836,6 +1593,9 @@
                     {
                       "widgetId": "30-1-9"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_http1_response_package_size_percentile/1024"
                   ]
                 },
                 {
@@ -1845,12 +1605,6 @@
                   "h": 11,
                   "i": "6",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_http1_client_duration"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -1891,6 +1645,9 @@
                     {
                       "widgetId": "30-1-9"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_http1_client_duration"
                   ]
                 },
                 {
@@ -1900,12 +1657,6 @@
                   "h": 11,
                   "i": "7",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readLabeledMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_http1_client_duration_percentile"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -1946,6 +1697,9 @@
                     {
                       "widgetId": "30-1-9"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_http1_client_duration_percentile"
                   ]
                 },
                 {
@@ -1955,12 +1709,6 @@
                   "h": 11,
                   "i": "8",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_http1_server_duration"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -2001,6 +1749,9 @@
                     {
                       "widgetId": "30-1-9"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_http1_server_duration"
                   ]
                 },
                 {
@@ -2010,12 +1761,6 @@
                   "h": 11,
                   "i": "9",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readLabeledMetricsValues"
-                  ],
-                  "metrics": [
-                    "process_relation_http1_server_duration_percentile"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -2056,6 +1801,9 @@
                     {
                       "widgetId": "30-1-0"
                     }
+                  ],
+                  "expressions": [
+                    "process_relation_http1_server_duration_percentile"
                   ]
                 }
               ]
@@ -2070,12 +1818,6 @@
                   "h": 37,
                   "i": "0",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readRecords"
-                  ],
-                  "metrics": [
-                    "sampled_slow_trace_record"
-                  ],
                   "graph": {
                     "type": "TopList",
                     "color": "purple"
@@ -2083,11 +1825,12 @@
                   "widget": {
                     "title": "Sampled Slow Traces(ms)"
                   },
-                  "metricConfig": [
-                    {
-                      "topN": "50"
-                    }
-                  ]
+                  "expressions": [
+                    "top_n(sampled_slow_trace_record,50,DES)"
+                  ],
+                  "relatedTrace": {
+                    "refIdType": "traceId"
+                  }
                 },
                 {
                   "x": 8,
@@ -2096,12 +1839,6 @@
                   "h": 37,
                   "i": "1",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readRecords"
-                  ],
-                  "metrics": [
-                    "sampled_status_4xx_trace_record"
-                  ],
                   "graph": {
                     "type": "TopList",
                     "color": "purple"
@@ -2109,11 +1846,12 @@
                   "widget": {
                     "title": "Traces from HTTP Code in [400, 500) (ms)"
                   },
-                  "metricConfig": [
-                    {
-                      "topN": "50"
-                    }
-                  ]
+                  "expressions": [
+                    "top_n(sampled_status_4xx_trace_record,50,DES)"
+                  ],
+                  "relatedTrace": {
+                    "refIdType": "traceId"
+                  }
                 },
                 {
                   "x": 16,
@@ -2122,12 +1860,6 @@
                   "h": 37,
                   "i": "2",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readRecords"
-                  ],
-                  "metrics": [
-                    "sampled_status_5xx_trace_record"
-                  ],
                   "graph": {
                     "type": "TopList",
                     "color": "purple"
@@ -2135,11 +1867,12 @@
                   "widget": {
                     "title": "Traces from HTTP Code in [500, 600) (ms)"
                   },
-                  "metricConfig": [
-                    {
-                      "topN": "50"
-                    }
-                  ]
+                  "expressions": [
+                    "top_n(sampled_status_5xx_trace_record,50,DES)"
+                  ],
+                  "relatedTrace": {
+                    "refIdType": "traceId"
+                  }
                 },
                 {
                   "x": 0,
@@ -2149,8 +1882,8 @@
                   "i": "3",
                   "type": "Text",
                   "graph": {
-                    "fontColor": "white",
-                    "backgroundColor": "blue",
+                    "fontColor": "theme",
+                    "backgroundColor": "theme",
                     "content": "The sampled HTTP 1.x requests within tracing context.",
                     "fontSize": 14,
                     "textAlign": "left"
@@ -2165,7 +1898,7 @@
       "layer": "MESH",
       "entity": "ProcessRelation",
       "isRoot": false,
-      "id": "82162975-3a75-4cc8-b89c-be1d1dc2ff82"
+      "id": "Mesh-Process-Relation-Metrics"
     }
   }
 ]

@@ -33,6 +33,7 @@ import org.apache.skywalking.mqe.rt.exception.IllegalExpressionException;
 import org.apache.skywalking.oap.server.core.alarm.provider.discord.DiscordSettings;
 import org.apache.skywalking.oap.server.core.alarm.provider.pagerduty.PagerDutySettings;
 import org.apache.skywalking.oap.server.core.alarm.provider.webhook.WebhookSettings;
+import org.apache.skywalking.oap.server.library.module.ModuleManager;
 import org.apache.skywalking.oap.server.library.util.StringUtil;
 import org.apache.skywalking.oap.server.core.alarm.provider.dingtalk.DingtalkSettings;
 import org.apache.skywalking.oap.server.core.alarm.provider.feishu.FeishuSettings;
@@ -52,13 +53,16 @@ public class RulesReader {
     private Map yamlData;
     private final Set<String> defaultHooks = new HashSet<>();
     private final Set<String> allHooks = new HashSet<>();
+    private final ModuleManager moduleManager;
 
-    public RulesReader(InputStream inputStream) {
+    public RulesReader(InputStream inputStream, ModuleManager moduleManager) {
+        this.moduleManager = moduleManager;
         Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
         yamlData = yaml.load(inputStream);
     }
 
-    public RulesReader(Reader io) {
+    public RulesReader(Reader io, ModuleManager moduleManager) {
+        this.moduleManager = moduleManager;
         Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
         yamlData = yaml.load(io);
     }
@@ -88,7 +92,7 @@ public class RulesReader {
         rules.setRules(new ArrayList<>());
         rulesData.forEach((k, v) -> {
             if (((String) k).endsWith("_rule")) {
-                AlarmRule alarmRule = new AlarmRule();
+                AlarmRule alarmRule = new AlarmRule(moduleManager);
                 alarmRule.setAlarmRuleName((String) k);
                 Map settings = (Map) v;
                 Object expression = settings.get("expression");
@@ -153,11 +157,12 @@ public class RulesReader {
             Map<String, Object> config = (Map<String, Object>) v;
             WebhookSettings settings = new WebhookSettings(
                 k.toString(), AlarmHooksType.webhook, (Boolean) config.getOrDefault("is-default", false));
-
             List<String> urls = (List<String>) config.get("urls");
             if (urls != null) {
                 settings.getUrls().addAll(urls);
             }
+            Map<String, String> headers = (Map<String, String>) config.getOrDefault("headers", new HashMap<>());
+            settings.setHeaders(headers);
             rules.getWebhookSettingsMap().put(settings.getFormattedName(), settings);
             if (settings.isDefault()) {
                 this.defaultHooks.add(settings.getFormattedName());

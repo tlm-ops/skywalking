@@ -31,12 +31,11 @@ import org.apache.skywalking.oap.server.core.analysis.meter.function.MeterFuncti
 import org.apache.skywalking.oap.server.core.analysis.metrics.DataTable;
 import org.apache.skywalking.oap.server.core.analysis.metrics.LabeledValueHolder;
 import org.apache.skywalking.oap.server.core.analysis.metrics.Metrics;
-import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.Entrance;
-import org.apache.skywalking.oap.server.core.analysis.metrics.annotation.SourceFrom;
 import org.apache.skywalking.oap.server.core.remote.grpc.proto.RemoteData;
 import org.apache.skywalking.oap.server.core.storage.StorageID;
 import org.apache.skywalking.oap.server.core.storage.annotation.BanyanDB;
 import org.apache.skywalking.oap.server.core.storage.annotation.Column;
+import org.apache.skywalking.oap.server.core.storage.annotation.ElasticSearch;
 import org.apache.skywalking.oap.server.core.storage.type.Convert2Entity;
 import org.apache.skywalking.oap.server.core.storage.type.Convert2Storage;
 import org.apache.skywalking.oap.server.core.storage.type.StorageBuilder;
@@ -49,6 +48,7 @@ public abstract class SumLabeledFunction extends Meter implements AcceptableValu
 
     @Setter
     @Getter
+    @ElasticSearch.EnableDocValues
     @Column(name = ENTITY_ID, length = 512)
     @BanyanDB.SeriesID(index = 0)
     private String entityId;
@@ -64,15 +64,10 @@ public abstract class SumLabeledFunction extends Meter implements AcceptableValu
     @BanyanDB.MeasureField
     private DataTable value = new DataTable(30);
 
-    @Entrance
-    public final void combine(@SourceFrom DataTable value) {
-        this.value.append(value);
-    }
-
     @Override
     public final boolean combine(Metrics metrics) {
         SumLabeledFunction sumLabeledFunction = (SumLabeledFunction) metrics;
-        value.append(sumLabeledFunction.value);
+        this.value.append(sumLabeledFunction.value);
         return true;
     }
 

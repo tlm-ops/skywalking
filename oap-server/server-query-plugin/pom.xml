@@ -21,8 +21,22 @@
     <parent>
         <artifactId>oap-server</artifactId>
         <groupId>org.apache.skywalking</groupId>
-        <version>9.6.0</version>
+        <version>${revision}</version>
     </parent>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.skywalking</groupId>
+            <artifactId>library-module</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.skywalking</groupId>
+            <artifactId>server-core</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>server-query-plugin</artifactId>
@@ -32,5 +46,6 @@
         <module>zipkin-query-plugin</module>
         <module>promql-plugin</module>
         <module>logql-plugin</module>
+        <module>status-query-plugin</module>
     </modules>
 </project>

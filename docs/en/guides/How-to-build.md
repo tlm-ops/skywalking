@@ -16,7 +16,7 @@ If you need to execute build behind the proxy, edit the *.mvn/jvm.config* and se
 ```
 
 ### Building from GitHub
-1. Prepare git, JDK11+, and Maven 3.6+.
+1. Prepare git, JDK 11, 17, 21 (LTS versions), and Maven 3.6+.
 1. Clone the project.
 
     If you want to build a release from source codes, set a `tag name` by using `git clone -b [tag_name] ...` while cloning.
@@ -84,4 +84,5 @@ Refer to [Build docker image](../../../docker) for more details.
     * `grpc-java` and `java` folders in **oap-server/exporter/target/generated-sources/protobuf**
     * `grpc-java` and `java` folders in **oap-server/server-configuration/grpc-configuration-sync/target/generated-sources/protobuf**
     * `grpc-java` and `java` folders in **oap-server/server-alarm-plugin/target/generated-sources/protobuf**
+    * `grpc-java` and `java` folders in **oap-server/server-fetcher-plugin/fetcher-proto/target/generated-sources/protobuf**
     * `antlr4` folder in **oap-server/oal-grammar/target/generated-sources**

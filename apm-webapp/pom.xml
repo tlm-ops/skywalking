@@ -21,7 +21,7 @@
     <parent>
         <artifactId>apm</artifactId>
         <groupId>org.apache.skywalking</groupId>
-        <version>9.6.0</version>
+        <version>${revision}</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -101,7 +101,7 @@
                 <version>${frontend-maven-plugin.version}</version>
                 <configuration>
                     <workingDirectory>${ui.path}</workingDirectory>
-                    <nodeVersion>v16.14.0</nodeVersion>
+                    <nodeVersion>v22.14.0</nodeVersion>
                 </configuration>
                 <executions>
                     <execution>

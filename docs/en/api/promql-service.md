@@ -12,20 +12,26 @@ The following doc describes the details of the supported protocol and compared i
 If not mentioned, it will not be supported by default.
 
 ### Time series Selectors
-#### [Instant Vector Selectors](https://prometheus.io/docs/prometheus/latest/querying/basics/#instant-vector-selectors)
+#### Instant Vector Selectors
+[Prometheus Docs Reference](https://prometheus.io/docs/prometheus/latest/querying/basics/#instant-vector-selectors)
+
 For example: select metric `service_cpm` which the service is `$service` and the layer is `$layer`.
 ```text
 service_cpm{service='$service', layer='$layer'}
 ```
 **Note: The label matching operators only support `=` instead of regular expressions.**
 
-#### [Range Vector Selectors](https://prometheus.io/docs/prometheus/latest/querying/basics/#range-vector-selectors)
+#### Range Vector Selectors
+[Prometheus Docs Reference](https://prometheus.io/docs/prometheus/latest/querying/basics/#range-vector-selectors)
+
 For example: select metric `service_cpm` which the service is `$service` and the layer is `$layer` within the last 5 minutes.
 ```text
 service_cpm{service='$service', layer='$layer'}[5m]
 ```
 
-#### [Time Durations](https://prometheus.io/docs/prometheus/latest/querying/basics/#time-durations)
+#### Time Durations
+[Prometheus Docs Reference](https://prometheus.io/docs/prometheus/latest/querying/basics/#time-durations)
+
 | Unit | Definition   | Support |
 |------|--------------|---------|
 | ms   | milliseconds | yes     |
@@ -37,7 +43,10 @@ service_cpm{service='$service', layer='$layer'}[5m]
 | y    | years        | **no**  |
 
 ### Binary operators
-#### [Arithmetic binary operators](https://prometheus.io/docs/prometheus/latest/querying/operators/#arithmetic-binary-operators)
+#### Arithmetic binary operators
+
+[Prometheus Docs Reference](https://prometheus.io/docs/prometheus/latest/querying/operators/#arithmetic-binary-operators)
+
 | Operator | Definition           | Support |
 |----------|----------------------|---------|
 | +        | addition             | yes     |
@@ -67,7 +76,10 @@ service_cpm{service='$service', layer='$layer'} + service_cpm{service='$service'
 
 **Note: The operations between vectors require the same metric and labels, and don't support [Vector matching](https://prometheus.io/docs/prometheus/latest/querying/operators/#vector-matching).**
 
-#### [Comparison binary operators](https://prometheus.io/docs/prometheus/latest/querying/operators/#comparison-binary-operators)
+#### Comparison binary operators
+
+[Prometheus Docs Reference](https://prometheus.io/docs/prometheus/latest/querying/operators/#comparison-binary-operators)
+
 | Operator | Definition       | Support |
 |----------|------------------|---------|
 | ==       | equal            | yes     |
@@ -94,20 +106,50 @@ For example:
 service_cpm{service='service_A', layer='$layer'} > service_cpm{service='service_B', layer='$layer'}
 ```
 
+### Aggregation operators
+[Prometheus Docs Reference](https://prometheus.io/docs/prometheus/latest/querying/operators/#aggregation-operators)
+
+| Operator | Definition                            | Support |
+|----------|---------------------------------------|---------|
+| sum      | calculate sum over dimensions         | yes     |
+| min      | select minimum over dimensions        | yes     |
+| max      | select maximum over dimensions        | yes     |
+| avg      | calculate the average over dimensions | yes     |
+
+For example:
+
+If the metric `http_requests_total` had time series that fan out by `service`, `service_instance_id`, and `group` labels,
+we could calculate the total number of seen HTTP requests per service and group over all service instances via:
+
+```
+sum by (service, group) (http_requests_total{service='$service', layer='$layer'})
+```
+Which is equivalent to:
+```
+sum without (service_instance_id) (http_requests_total{service='$service', layer='$layer'})
+```
+If we are just interested in the total of HTTP requests we have seen in all services, we could simply write:
+```
+sum(http_requests_total{service='$service', layer='$layer'})
+```
+
 ### HTTP API
 
 #### Expression queries
 
-##### [Instant queries](https://prometheus.io/docs/prometheus/latest/querying/api/#instant-queries)
+##### Instant queries
+
+[Prometheus Docs Reference](https://prometheus.io/docs/prometheus/latest/querying/api/#instant-queries)
+
 ```text
 GET|POST /api/v1/query
 ```
 
-| Parameter | Definition                                                                                                                          | Support | Optional   |
-|-----------|-------------------------------------------------------------------------------------------------------------------------------------|---------|------------|
-| query     | prometheus expression                                                                                                               | yes     | no         |
-| time      | **The latest metrics value from current time to this time is returned. If time is empty, the default look-back time is 2 minutes.** | yes     | yes        |
-| timeout   | evaluation timeout                                                                                                                  | **no**  | **ignore** |
+| Parameter | Definition                                                                                                                                                                            | Support | Optional   |
+|-----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|------------|
+| query     | prometheus expression                                                                                                                                                                 | yes     | no         |
+| time      | **The latest metrics value from current time to this time is returned. If time is empty, the default look-back time is 2 minutes.** time format: RFC3399 or unix_timestamp in seconds | yes     | yes        |
+| timeout   | evaluation timeout                                                                                                                                                                    | **no**  | **ignore** |
 
 For example:
 ```text
@@ -138,7 +180,17 @@ Result:
 }
 ```
 
-##### [Range queries](https://prometheus.io/docs/prometheus/latest/querying/api/#range-queries)
+We can also use [Range Vector Selectors](#range-vector-selectors) in the instant query.
+```
+/api/v1/query?query=service_cpm{service='agent::songs', layer='GENERAL'}[5m]
+```
+
+the result is the same as the [Range queries](#range-queries).
+
+##### Range queries
+
+[Prometheus Docs Reference](https://prometheus.io/docs/prometheus/latest/querying/api/#range-queries)
+
 ```text
 GET|POST /api/v1/query_range
 ```
@@ -146,8 +198,8 @@ GET|POST /api/v1/query_range
 | Parameter | Definition                                                                           | Support | Optional   |
 |-----------|--------------------------------------------------------------------------------------|---------|------------|
 | query     | prometheus expression                                                                | yes     | no         |
-| start     | start timestamp, **seconds**                                                         | yes     | no         |
-| end       | end timestamp, **seconds**                                                           | yes     | no         |
+| start     | start timestamp, format: RFC3399 or unix_timestamp in seconds                        | yes     | no         |
+| end       | end timestamp, format: RFC3399 or unix_timestamp in seconds                          | yes     | no         |
 | step      | **SkyWalking will automatically fit Step(DAY, HOUR, MINUTE) through start and end.** | **no**  | **ignore** |
 | timeout   | evaluation timeout                                                                   | **no**  | **ignore** |
 
@@ -204,16 +256,18 @@ Result:
 
 #### Querying metadata
 
-##### [Finding series by label matchers](https://prometheus.io/docs/prometheus/latest/querying/api/#finding-series-by-label-matchers)
+##### Finding series by label matchers
+[Prometheus Docs Reference](https://prometheus.io/docs/prometheus/latest/querying/api/#finding-series-by-label-matchers)
+
 ```text
 GET|POST /api/v1/series
 ```
 
-| Parameter | Definition                   | Support | Optional |
-|-----------|------------------------------|---------|----------|
-| match[]   | series selector              | yes     | no       |
-| start     | start timestamp, **seconds** | yes     | no       |
-| end       | end timestamp, **seconds**   | yes     | no       |
+| Parameter | Definition                                          | Support | Optional |
+|-----------|-----------------------------------------------------|---------|----------|
+| match[]   | series selector                                     | yes     | no       |
+| start     | start, format: RFC3399 or unix_timestamp in seconds | yes     | no       |
+| end       | end, format: RFC3399 or unix_timestamp in seconds   | yes     | no       |
 
 For example:
 ```text
@@ -264,16 +318,18 @@ Result:
 - instance_traffic
 - endpoint_traffic
 
-#### [Getting label names](https://prometheus.io/docs/prometheus/latest/querying/api/#getting-label-names)
+#### Getting label names
+[Prometheus Docs Reference](https://prometheus.io/docs/prometheus/latest/querying/api/#getting-label-names)
+
 ```text
 GET|POST /api/v1/labels
 ```
 
-| Parameter | Definition      | Support | Optional |
-|-----------|-----------------|---------|----------|
-| match[]   | series selector | yes     | yes      |
-| start     | start timestamp | **no**  | yes      |
-| end       | end timestamp   | **no**  | yes      |
+| Parameter | Definition                                                                      | Support | Optional |
+|-----------|---------------------------------------------------------------------------------|---------|----------|
+| match[]   | series selector                                                                 | yes     | yes      |
+| start     | start, format: RFC3399 or unix_timestamp in seconds                             | **no**  | yes      |
+| end       | end timestamp, if end time is not present, use current time as default end time | yes     | yes      |
 
 For example:
 ```text
@@ -295,16 +351,18 @@ Result:
 }
 ```
 
-#### [Querying label values](https://prometheus.io/docs/prometheus/latest/querying/api/#querying-label-values)
+#### Querying label values
+[Prometheus Docs Reference](https://prometheus.io/docs/prometheus/latest/querying/api/#querying-label-values)
+
 ```text
 GET /api/v1/label/<label_name>/values
 ```
 
-| Parameter | Definition      | Support | Optional |
-|-----------|-----------------|---------|----------|
-| match[]   | series selector | yes     | no       |
-| start     | start timestamp | **no**  | yes      |
-| end       | end timestamp   | **no**  | yes      |
+| Parameter | Definition                                                                                                          | Support | Optional |
+|-----------|---------------------------------------------------------------------------------------------------------------------|---------|----------|
+| match[]   | series selector                                                                                                     | yes     | yes      |
+| start     | start, format: RFC3399 or unix_timestamp in seconds                                                                 | **no**  | yes      |
+| end       | end, format: RFC3399 or unix_timestamp in seconds, if end time is not present, use current time as default end time | yes     | yes      |
 
 For example:
 ```text
@@ -333,7 +391,9 @@ Result:
 }
 ```
 
-#### [Querying metric metadata](https://prometheus.io/docs/prometheus/latest/querying/api/#querying-metric-metadata)
+#### Querying metric metadata
+[Prometheus Docs Reference](https://prometheus.io/docs/prometheus/latest/querying/api/#querying-metric-metadata)
+
 ```text
 GET /api/v1/metadata
 ```
@@ -381,7 +441,7 @@ Result:
 
 ## Metrics Type For Query
 
-### Supported Metrics [Scope](../../../oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/query/enumeration/Scope.java)(Catalog)
+### Supported Metrics Scope(Catalog)
 Not all scopes are supported for now, please check the following table:
 
 | Scope                   | Support |
@@ -389,20 +449,26 @@ Not all scopes are supported for now, please check the following table:
 | Service                 | yes     |
 | ServiceInstance         | yes     |
 | Endpoint                | yes     |
-| ServiceRelation         | no      |
-| ServiceInstanceRelation | no      |
+| ServiceRelation         | yes     |
+| ServiceInstanceRelation | yes     |
+| EndpointRelation        | yes     |
 | Process                 | no      |
 | ProcessRelation         | no      |
+
+All Scopes could be found [here](../../../oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/query/enumeration/Scope.java).
 
 ### General labels
 Each metric contains general labels: [layer](../../../oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/Layer.java).
 Different metrics will have different labels depending on their Scope and metric value type.
 
-| Query Labels                     | Scope           | Expression Example                                                                             |
-|----------------------------------|-----------------|------------------------------------------------------------------------------------------------|
-| layer, service                   | Service         | service_cpm{service='$service', layer='$layer'}                                                |
-| layer, service, service_instance | ServiceInstance | service_instance_cpm{service='$service', service_instance='$service_instance', layer='$layer'} |
-| layer, service, endpoint         | Endpoint        | endpoint_cpm{service='$service', endpoint='$endpoint', layer='$layer'}                         |
+| Query Labels                                                                      | Scope                   | Expression Example                                                                                                                                                                                                 |
+|-----------------------------------------------------------------------------------|-------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| layer, service                                                                    | Service                 | service_cpm{service='$service', layer='$layer'}                                                                                                                                                                    |
+| layer, service, service_instance                                                  | ServiceInstance         | service_instance_cpm{service='$service', service_instance='$service_instance', layer='$layer'}                                                                                                                     |
+| layer, service, endpoint                                                          | Endpoint                | endpoint_cpm{service='$service', endpoint='$endpoint', layer='$layer'}                                                                                                                                             |
+| layer, service, dest_service, dest_layer                                          | ServiceRelation         | service_relation_metric{service='$service', layer='$layer', dest_layer='$dest_layer', dest_service='$dest_service'}                                                                                                |
+| layer, service, dest_service, dest_layer, service_instance, dest_service_instance | ServiceInstanceRelation | service_instance_relation_metric{service='$service', layer='$layer', dest_layer='$dest_layer', dest_service='$dest_service', dest_service_instance='$dest_service_instance', service_instance='$service_instance'} |
+| layer, service, dest_service, dest_layer, endpoint, dest_endpoint                 | EndpointRelation        | endpoint_relation_metric{service='$service', endpoint='$endpoint', layer='$layer', dest_layer='$dest_layer', dest_service='$dest_service', dest_endpoint='$dest_endpoint'}                                         |
 
 
 
@@ -446,14 +512,12 @@ service_cpm{service='agent::songs', layer='GENERAL'}
 - Query Labels:
 ```text
 --{General labels}
---labels: Used to filter the value labels to be returned
---relabels: Used to rename the returned value labels
-note: The number and order of labels must match the number and order of relabels.
+--metric labels: Used to filter the value labels to be returned
 ```
 
 - Expression Example:
 ```text
-service_percentile{service='agent::songs', layer='GENERAL', labels='0,1,2', relabels='P50,P75,P90'}
+service_percentile{service='agent::songs', layer='GENERAL', p='50,75,90'}
 ```
 
 - Result (Instant Query):
@@ -466,7 +530,7 @@ service_percentile{service='agent::songs', layer='GENERAL', labels='0,1,2', rela
       {
         "metric": {
           "__name__": "service_percentile",
-          "label": "P50",
+          "p": "50",
           "layer": "GENERAL",
           "scope": "Service",
           "service": "agent::songs"
@@ -479,7 +543,7 @@ service_percentile{service='agent::songs', layer='GENERAL', labels='0,1,2', rela
       {
         "metric": {
           "__name__": "service_percentile",
-          "label": "P75",
+          "p": "75",
           "layer": "GENERAL",
           "scope": "Service",
           "service": "agent::songs"
@@ -492,7 +556,7 @@ service_percentile{service='agent::songs', layer='GENERAL', labels='0,1,2', rela
       {
         "metric": {
           "__name__": "service_percentile",
-          "label": "P90",
+          "p": "90",
           "layer": "GENERAL",
           "scope": "Service",
           "service": "agent::songs"

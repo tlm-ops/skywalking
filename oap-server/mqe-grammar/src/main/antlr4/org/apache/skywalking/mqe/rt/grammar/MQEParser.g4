@@ -20,7 +20,7 @@ parser grammar MQEParser;
 
 options { tokenVocab = MQELexer; }
 
-root: expression;
+root: expression EOF;
 
 expression
     : expressionNode                   # exprNode
@@ -28,18 +28,23 @@ expression
     | expression mulDivMod expression  # mulDivModOp
     | expression addSub expression     # addSubOp
     | expression compare expression    # compareOp
+    | expression bool_operator expression #boolOP
     | aggregation L_PAREN expression R_PAREN # aggregationOp
     | mathematical_operator0 L_PAREN expression R_PAREN #mathematicalOperator0OP
     | mathematical_operator1 L_PAREN expression COMMA parameter R_PAREN #mathematicalOperator1OP
+    | trend L_PAREN metric COMMA INTEGER R_PAREN #trendOP
     | logical_operator L_PAREN expressionList R_PAREN #logicalOperatorOP
-    | topN L_PAREN metric COMMA parameter COMMA order R_PAREN  #topNOP
-    | relabels L_PAREN expression COMMA label R_PAREN #relablesOP
+    | topN                                                                          #topNOP
+    | topNOf L_PAREN topN (COMMA topN)* COMMA INTEGER COMMA order R_PAREN           #topNOfOP
+    | relabels L_PAREN expression COMMA label COMMA replaceLabel R_PAREN #relablesOP
     | aggregateLabels L_PAREN expression COMMA aggregateLabelsFunc R_PAREN #aggregateLabelsOp
+    | sort_values L_PAREN expression (COMMA INTEGER)? COMMA order R_PAREN #sortValuesOP
+    | sort_label_values L_PAREN expression COMMA order COMMA labelNameList R_PAREN #sortLabelValuesOP
+    | baseline L_PAREN metric COMMA baseline_type R_PAREN #baselineOP
     ;
 
 expressionList
-    : expression (COMMA expression)*
-    ;
+    : expression (COMMA expression)*;
 
 expressionNode:  metric| scalar;
 
@@ -48,14 +53,15 @@ mulDivMod:       MUL | DIV | MOD;
 compare:        (DEQ | NEQ | LTE | LT | GTE | GT) BOOL?;
 
 metricName:      NAME_STRING;
-metric:   metricName | metricName L_BRACE label? R_BRACE;
+metric:   metricName | metricName L_BRACE labelList? R_BRACE;
 
-//For now, we only have a single anonymous label with multi label values in a labeled metric.
-//To be able to use it in expressions, define `_` as the anonymous label name (key).
-labelName:       GENERAL_LABEL_NAME;
+labelName:       NAME_STRING | GENERAL_LABEL_NAME;
+labelNameList:   labelName (COMMA labelName)*;
 labelValue:      VALUE_STRING;
 label:           labelName EQ labelValue;
+labelList:       label (COMMA label)*;
 
+replaceLabel:    label;
 
 scalar:   INTEGER | DECIMAL;
 
@@ -69,10 +75,17 @@ mathematical_operator0:
 mathematical_operator1:
     ROUND;
 
-topN: TOP_N;
+trend:
+    INCREASE | RATE;
+
+topN: TOP_N L_PAREN metric COMMA INTEGER COMMA order (COMMA attributeList)? R_PAREN;
+topNOf: TOP_N_OF;
 
 logical_operator:
-    VIEW_AS_SEQ;
+    VIEW_AS_SEQ | IS_PRESENT;
+
+bool_operator:
+    AND | OR;
 
 relabels: RELABELS;
 
@@ -83,5 +96,21 @@ order: ASC | DES;
 aggregateLabels:
     AGGREGATE_LABELS;
 
-aggregateLabelsFunc:
+aggregateLabelsFunc: aggregateLabelsFuncName (L_PAREN labelNameList R_PAREN)?;
+
+aggregateLabelsFuncName:
     AVG | SUM | MAX | MIN;
+
+sort_values:
+    SORT_VALUES;
+
+sort_label_values:
+    SORT_LABEL_VALUES;
+
+attributeName:
+    ATTR0 | ATTR1 | ATTR2 | ATTR3 | ATTR4 | ATTR5;
+attribute: attributeName (EQ | NEQ) VALUE_STRING;
+attributeList: attribute (COMMA attribute)*;
+
+baseline: BASELINE;
+baseline_type: VALUE | UPPER | LOWER;

@@ -22,7 +22,6 @@ import java.lang.reflect.Field;
 import java.util.Map;
 import org.apache.skywalking.mqe.rt.exception.IllegalExpressionException;
 import org.apache.skywalking.oap.server.core.query.enumeration.Scope;
-import org.apache.skywalking.oap.server.core.query.sql.Function;
 import org.apache.skywalking.oap.server.core.source.DefaultScopeDefine;
 import org.apache.skywalking.oap.server.core.storage.annotation.Column;
 import org.apache.skywalking.oap.server.core.storage.annotation.ValueColumnMetadata;
@@ -34,15 +33,19 @@ public class AlarmRuleTest {
     @BeforeEach
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
         ValueColumnMetadata.INSTANCE.putIfAbsent(
-            "service_percent", "testColumn", Column.ValueDataType.COMMON_VALUE, Function.Avg, 0,
+            "service_percent", "testColumn", Column.ValueDataType.COMMON_VALUE, 0,
             Scope.Service.getScopeId()
         );
         ValueColumnMetadata.INSTANCE.putIfAbsent(
-            "endpoint_percent", "testColumn", Column.ValueDataType.COMMON_VALUE, Function.Avg, 0,
+            "endpoint_percent", "testColumn", Column.ValueDataType.COMMON_VALUE, 0,
             Scope.Endpoint.getScopeId()
         );
         ValueColumnMetadata.INSTANCE.putIfAbsent(
-            "record", "testColumn", Column.ValueDataType.SAMPLED_RECORD, Function.Avg, 0,
+            "meter_status_code", "testColumn", Column.ValueDataType.LABELED_VALUE, 0,
+            Scope.Service.getScopeId()
+        );
+        ValueColumnMetadata.INSTANCE.putIfAbsent(
+            "record", "testColumn", Column.ValueDataType.SAMPLED_RECORD, 0,
             Scope.Endpoint.getScopeId()
         );
         Field serviceField = DefaultScopeDefine.class.getDeclaredField("SERVICE_CATALOG");
@@ -57,10 +60,16 @@ public class AlarmRuleTest {
 
     @Test
     public void testExpressionVerify() throws IllegalExpressionException {
-        AlarmRule rule = new AlarmRule();
-        //normal
+        AlarmRule rule = new AlarmRule(null);
+        //normal common metric
         rule.setExpression("sum(service_percent < 85) >= 3");
-
+        //normal labeled metric
+        //4xx + 5xx > 10
+        rule.setExpression("sum(aggregate_labels(meter_status_code{_='4xx,5xx'},sum) > 10) > 3");
+        rule.setExpression("sum(aggregate_labels(meter_status_code,sum) > 10) > 3");
+        //4xx or 5xx > 10
+        rule.setExpression("sum(meter_status_code{_='4xx,5xx'} > 10) >= 3");
+        rule.setExpression("sum(meter_status_code > 10) >= 3");
         //illegal expression
         Assertions.assertThrows(IllegalExpressionException.class, () -> {
             rule.setExpression("what? sum(service_percent < 85) >= 3");
@@ -68,7 +77,7 @@ public class AlarmRuleTest {
 
         //not exist metric
         Assertions.assertEquals(
-            "Metric: [service_percent111] dose not exist.",
+            "Expression: sum(service_percent111 < 85) >= 3 error: Metric: [service_percent111] does not exist.",
             Assertions.assertThrows(IllegalExpressionException.class, () -> {
                 rule.setExpression("sum(service_percent111 < 85) >= 3");
             }).getMessage()
@@ -92,7 +101,7 @@ public class AlarmRuleTest {
 
         //not a common or labeled metric
         Assertions.assertEquals(
-            "Metric dose not supported in alarm, metric: [record] is not a common or labeled metric.",
+            "Expression: sum(record < 85) > 1 error: Metric does not supported in alarm, metric: [record] is not a common or labeled metric.",
             Assertions.assertThrows(IllegalExpressionException.class, () -> {
                 rule.setExpression("sum(record < 85) > 1");
             }).getMessage()
@@ -103,5 +112,8 @@ public class AlarmRuleTest {
             rule.setExpression("sum(service_percent > endpoint_percent) >= 1");
         }).getMessage().contains("The metrics in expression: sum(service_percent > endpoint_percent) >= 1 must have the same scope level, but got:"));
 
+        //trend expression
+        rule.setExpression("sum((increase(service_percent,5) + increase(service_percent,2)) > 0) >= 1");
+        Assertions.assertEquals(5, rule.getMaxTrendRange());
     }
 }

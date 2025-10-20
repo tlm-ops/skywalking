@@ -28,6 +28,13 @@ services:
       - 12800
       - 1234
 
+  banyandb:
+    extends:
+      file: ../../script/docker-compose/base-compose.yml
+      service: banyandb
+    ports:
+      - 17912
+
   provider:
     extends:
       file: ../../script/docker-compose/base-compose.yml
@@ -55,7 +62,7 @@ services:
         condition: service_healthy
 
   otel-collector:
-    image: otel/opentelemetry-collector:0.50.0
+    image: otel/opentelemetry-collector:${OTEL_COLLECTOR_VERSION}
     networks:
       - e2e
     command: [ "--config=/etc/otel-collector-config.yaml" ]

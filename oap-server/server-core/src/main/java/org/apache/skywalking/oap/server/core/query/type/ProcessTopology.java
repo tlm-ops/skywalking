@@ -22,11 +22,15 @@ import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Setter;
+import org.apache.skywalking.oap.server.core.query.type.debugging.DebuggingTrace;
 
 @Getter
 public class ProcessTopology {
     private final List<ProcessNode> nodes;
     private final List<Call> calls;
+    @Setter
+    private DebuggingTrace debuggingTrace;
 
     public ProcessTopology() {
         this.nodes = new ArrayList<>();

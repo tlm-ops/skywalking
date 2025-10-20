@@ -1,20 +1,3 @@
-/**
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 [
   {
     "id": "AWS_S3-service",
@@ -37,11 +20,7 @@
             "showUnit": true
           },
           "expressions": [
-            "aws_s3_4xx"
-          ],
-          "metricMode": "Expression",
-          "typesOfMQE": [
-            "SINGLE_VALUE"
+            "latest(aws_s3_4xx)"
           ]
         },
         {
@@ -61,11 +40,7 @@
             "showUnit": true
           },
           "expressions": [
-            "aws_s3_5xx"
-          ],
-          "metricMode": "Expression",
-          "typesOfMQE": [
-            "SINGLE_VALUE"
+            "latest(aws_s3_5xx)"
           ]
         },
         {
@@ -85,11 +60,7 @@
             "showUnit": true
           },
           "expressions": [
-            "aws_s3_all_requests"
-          ],
-          "metricMode": "Expression",
-          "typesOfMQE": [
-            "SINGLE_VALUE"
+            "latest(aws_s3_all_requests)"
           ]
         },
         {
@@ -109,11 +80,7 @@
             "showUnit": true
           },
           "expressions": [
-            "aws_s3_request_latency"
-          ],
-          "metricMode": "Expression",
-          "typesOfMQE": [
-            "SINGLE_VALUE"
+            "avg(aws_s3_request_latency)"
           ]
         },
         {
@@ -136,10 +103,6 @@
           },
           "expressions": [
             "aws_s3_4xx"
-          ],
-          "metricMode": "Expression",
-          "typesOfMQE": [
-            "TIME_SERIES_VALUES"
           ]
         },
         {
@@ -162,10 +125,6 @@
           },
           "expressions": [
             "aws_s3_5xx"
-          ],
-          "metricMode": "Expression",
-          "typesOfMQE": [
-            "TIME_SERIES_VALUES"
           ]
         },
         {
@@ -188,10 +147,6 @@
           },
           "expressions": [
             "aws_s3_request_latency"
-          ],
-          "metricMode": "Expression",
-          "typesOfMQE": [
-            "TIME_SERIES_VALUES"
           ]
         },
         {
@@ -214,10 +169,6 @@
           },
           "expressions": [
             "aws_s3_first_latency_bytes"
-          ],
-          "metricMode": "Expression",
-          "typesOfMQE": [
-            "TIME_SERIES_VALUES"
           ]
         },
         {
@@ -240,10 +191,6 @@
           },
           "expressions": [
             "aws_s3_all_requests"
-          ],
-          "metricMode": "Expression",
-          "typesOfMQE": [
-            "TIME_SERIES_VALUES"
           ]
         },
         {
@@ -266,10 +213,6 @@
           },
           "expressions": [
             "aws_s3_get_requests"
-          ],
-          "metricMode": "Expression",
-          "typesOfMQE": [
-            "TIME_SERIES_VALUES"
           ]
         },
         {
@@ -292,10 +235,6 @@
           },
           "expressions": [
             "aws_s3_put_requests"
-          ],
-          "metricMode": "Expression",
-          "typesOfMQE": [
-            "TIME_SERIES_VALUES"
           ]
         },
         {
@@ -318,10 +257,6 @@
           },
           "expressions": [
             "aws_s3_delete_requests"
-          ],
-          "metricMode": "Expression",
-          "typesOfMQE": [
-            "TIME_SERIES_VALUES"
           ]
         },
         {
@@ -352,10 +287,6 @@
           },
           "expressions": [
             "aws_s3_downloaded_bytes"
-          ],
-          "metricMode": "Expression",
-          "typesOfMQE": [
-            "TIME_SERIES_VALUES"
           ],
           "metricConfig": [
             {
@@ -391,10 +322,6 @@
           },
           "expressions": [
             "aws_s3_uploaded_bytes"
-          ],
-          "metricMode": "Expression",
-          "typesOfMQE": [
-            "TIME_SERIES_VALUES"
           ],
           "metricConfig": [
             {

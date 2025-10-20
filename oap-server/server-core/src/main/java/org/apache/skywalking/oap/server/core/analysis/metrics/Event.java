@@ -32,6 +32,7 @@ import org.apache.skywalking.oap.server.core.source.ScopeDeclaration;
 import org.apache.skywalking.oap.server.core.storage.StorageID;
 import org.apache.skywalking.oap.server.core.storage.annotation.BanyanDB;
 import org.apache.skywalking.oap.server.core.storage.annotation.Column;
+import org.apache.skywalking.oap.server.core.storage.annotation.ElasticSearch;
 import org.apache.skywalking.oap.server.core.storage.type.Convert2Entity;
 import org.apache.skywalking.oap.server.core.storage.type.Convert2Storage;
 import org.apache.skywalking.oap.server.core.storage.type.StorageBuilder;
@@ -48,6 +49,7 @@ import static org.apache.skywalking.oap.server.library.util.StringUtil.isNotBlan
     callSuper = false,
     of = "uuid"
 )
+@BanyanDB.IndexMode
 public class Event extends Metrics {
 
     public static final String INDEX_NAME = "events";
@@ -100,12 +102,14 @@ public class Event extends Metrics {
     @Column(name = TYPE)
     private String type;
 
-    @Column(name = MESSAGE)
+    @Column(name = MESSAGE, storageOnly = true, length = 2000)
     private String message;
 
     @Column(name = PARAMETERS, storageOnly = true, length = PARAMETER_MAX_LENGTH)
     private String parameters;
 
+    @ElasticSearch.EnableDocValues
+    @BanyanDB.EnableSort
     @Column(name = START_TIME)
     private long startTime;
 

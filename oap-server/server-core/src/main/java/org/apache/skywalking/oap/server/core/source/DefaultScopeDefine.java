@@ -127,6 +127,30 @@ public class DefaultScopeDefine {
 
     public static final int UI_MENU = 69;
 
+    public static final int SERVICE_HIERARCHY_RELATION = 70;
+    public static final int INSTANCE_HIERARCHY_RELATION = 71;
+
+    public static final int K8S_SERVICE = 72;
+    public static final int K8S_SERVICE_INSTANCE = 73;
+    public static final int K8S_SERVICE_RELATION = 74;
+    public static final int K8S_SERVICE_INSTANCE_RELATION = 75;
+    public static final int K8S_ENDPOINT = 76;
+
+    public static final int CILIUM_SERVICE = 78;
+    public static final int CILIUM_SERVICE_INSTANCE = 79;
+    public static final int CILIUM_SERVICE_RELATION = 80;
+    public static final int CILIUM_SERVICE_INSTANCE_RELATION = 81;
+    public static final int CILIUM_ENDPOINT = 82;
+    public static final int CILIUM_ENDPOINT_REALATION = 83;
+
+    public static final int JFR_PROFILING_DATA = 84;
+    public static final int ASYNC_PROFILER_TASK = 85;
+    public static final int ASYNC_PROFILER_TASK_LOG = 86;
+
+    public static final int BROWSER_APP_WEB_VITALS_PAGE_PERF = 87;
+    public static final int BROWSER_APP_RESOURCE_PERF = 88;
+    public static final int BROWSER_APP_WEB_INTERACTION_PAGE_PERF = 89;
+
     /**
      * Catalog of scope, the metrics processor could use this to group all generated metrics by oal rt.
      */
@@ -207,19 +231,25 @@ public class DefaultScopeDefine {
         if (virtualColumn != null) {
             scopeDefaultColumns.add(
                 new ScopeDefaultColumn(virtualColumn.fieldName(), virtualColumn.columnName(), virtualColumn
-                    .type(), virtualColumn.isID(), virtualColumn.length(), false));
+                    .type(), virtualColumn.isID(), virtualColumn.length(), false, false));
         }
         Field[] scopeClassField = originalClass.getDeclaredFields();
         if (scopeClassField != null) {
             for (Field field : scopeClassField) {
                 ScopeDefaultColumn.DefinedByField definedByField = field.getAnnotation(
                     ScopeDefaultColumn.DefinedByField.class);
+                ScopeDefaultColumn.BanyanDB banyanDB = field.getAnnotation(
+                    ScopeDefaultColumn.BanyanDB.class);
+                boolean groupByCondInTopN = false;
+                if (banyanDB != null) {
+                    groupByCondInTopN = banyanDB.groupByCondInTopN();
+                }
                 if (definedByField != null) {
                     if (!definedByField.requireDynamicActive() || ACTIVE_EXTRA_MODEL_COLUMNS) {
                         scopeDefaultColumns.add(
                             new ScopeDefaultColumn(
                                 field.getName(), definedByField.columnName(), field.getType(), false,
-                                definedByField.length(), definedByField.groupByCondInTopN()
+                                definedByField.length(), groupByCondInTopN, definedByField.isAttribute()
                             ));
                     }
                 }

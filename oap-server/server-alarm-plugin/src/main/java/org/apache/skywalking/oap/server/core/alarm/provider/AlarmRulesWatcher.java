@@ -24,6 +24,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
+
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.skywalking.oap.server.configuration.api.ConfigChangeWatcher;
@@ -37,6 +40,7 @@ import org.apache.skywalking.oap.server.core.alarm.provider.slack.SlackSettings;
 import org.apache.skywalking.oap.server.core.alarm.provider.webhook.WebhookSettings;
 import org.apache.skywalking.oap.server.core.alarm.provider.wechat.WechatSettings;
 import org.apache.skywalking.oap.server.core.alarm.provider.welink.WeLinkSettings;
+import org.apache.skywalking.oap.server.library.module.ModuleManager;
 import org.apache.skywalking.oap.server.library.module.ModuleProvider;
 
 /**
@@ -54,26 +58,50 @@ public class AlarmRulesWatcher extends ConfigChangeWatcher {
     private volatile Map<String, Set<String>> exprMetricsMap;
     private volatile Rules rules;
     private volatile String settingsString;
+    private final ReentrantLock lock;
+    private final AtomicBoolean notifiedByDynamicConfig;
+    private final ModuleManager moduleManager;
 
-    public AlarmRulesWatcher(Rules defaultRules, ModuleProvider provider) {
+    public AlarmRulesWatcher(Rules defaultRules, ModuleProvider provider, ModuleManager moduleManager) {
         super(AlarmModule.NAME, provider, "alarm-settings");
         this.runningContext = new HashMap<>();
         this.alarmRuleRunningRuleMap = new HashMap<>();
         this.exprMetricsMap = new HashMap<>();
         this.settingsString = null;
+        this.lock = new ReentrantLock();
+        this.notifiedByDynamicConfig = new AtomicBoolean(false);
+        this.moduleManager = moduleManager;
         notify(defaultRules);
     }
 
     @Override
     public void notify(ConfigChangeEvent value) {
-        if (value.getEventType().equals(EventType.DELETE)) {
-            settingsString = null;
-            notify(new Rules());
-        } else {
-            settingsString = value.getNewValue();
-            RulesReader rulesReader = new RulesReader(new StringReader(value.getNewValue()));
-            Rules rules = rulesReader.readRules();
-            notify(rules);
+        lock.lock();
+        try {
+            if (value.getEventType().equals(EventType.DELETE)) {
+                settingsString = null;
+                notify(new Rules());
+            } else {
+                settingsString = value.getNewValue();
+                RulesReader rulesReader = new RulesReader(new StringReader(value.getNewValue()), moduleManager);
+                Rules rules = rulesReader.readRules();
+                notify(rules);
+            }
+            notifiedByDynamicConfig.set(true);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void initConfig(Rules newRules) {
+        lock.lock();
+        try {
+            if (notifiedByDynamicConfig.get()) {
+                return;
+            }
+            notify(newRules);
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -90,7 +118,7 @@ public class AlarmRulesWatcher extends ConfigChangeWatcher {
              * If there is already an alarm rule that is the same as the new one, we'll reuse its
              * corresponding runningRule, to keep its history metrics
              */
-            RunningRule runningRule = alarmRuleRunningRuleMap.getOrDefault(rule, new RunningRule(rule));
+            RunningRule runningRule = alarmRuleRunningRuleMap.getOrDefault(rule, new RunningRule(rule, moduleManager));
 
             newAlarmRuleRunningRuleMap.put(rule, runningRule);
 
@@ -106,7 +134,7 @@ public class AlarmRulesWatcher extends ConfigChangeWatcher {
         this.runningContext = newRunningContext;
         this.alarmRuleRunningRuleMap = newAlarmRuleRunningRuleMap;
         this.exprMetricsMap = newExprMetricsMap;
-        log.info("Update alarm rules to {}", rules);
+        log.debug("Update alarm rules to {}", rules);
     }
 
     @Override

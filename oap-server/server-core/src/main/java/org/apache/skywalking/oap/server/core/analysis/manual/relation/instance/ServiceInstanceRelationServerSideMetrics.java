@@ -30,6 +30,7 @@ import org.apache.skywalking.oap.server.core.source.DefaultScopeDefine;
 import org.apache.skywalking.oap.server.core.storage.StorageID;
 import org.apache.skywalking.oap.server.core.storage.annotation.BanyanDB;
 import org.apache.skywalking.oap.server.core.storage.annotation.Column;
+import org.apache.skywalking.oap.server.core.storage.annotation.ElasticSearch;
 import org.apache.skywalking.oap.server.core.storage.type.Convert2Entity;
 import org.apache.skywalking.oap.server.core.storage.type.Convert2Storage;
 import org.apache.skywalking.oap.server.core.storage.type.StorageBuilder;
@@ -50,22 +51,23 @@ public class ServiceInstanceRelationServerSideMetrics extends Metrics {
 
     @Setter
     @Getter
-    @Column(name = SOURCE_SERVICE_ID)
+    @Column(name = SOURCE_SERVICE_ID, length = 250)
     private String sourceServiceId;
     @Setter
     @Getter
-    @Column(name = SOURCE_SERVICE_INSTANCE_ID)
+    @Column(name = SOURCE_SERVICE_INSTANCE_ID, length = 250)
     private String sourceServiceInstanceId;
     @Setter
     @Getter
-    @Column(name = DEST_SERVICE_ID)
+    @Column(name = DEST_SERVICE_ID, length = 250)
     private String destServiceId;
     @Setter
     @Getter
-    @Column(name = DEST_SERVICE_INSTANCE_ID)
+    @Column(name = DEST_SERVICE_INSTANCE_ID, length = 250)
     private String destServiceInstanceId;
     @Setter
     @Getter
+    @ElasticSearch.EnableDocValues
     @Column(name = ENTITY_ID, length = 512)
     @BanyanDB.SeriesID(index = 0)
     private String entityId;

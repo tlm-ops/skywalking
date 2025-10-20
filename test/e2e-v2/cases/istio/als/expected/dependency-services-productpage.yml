@@ -13,24 +13,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+debuggingtrace: null
 nodes:
 {{- contains .nodes }}
 - id: {{ b64enc "e2e::reviews"}}.1
   name: e2e::reviews
   type: http
   isreal: true
+  layers:
+    - MESH
 - id: {{ b64enc "e2e::productpage"}}.1
   name: e2e::productpage
   type: http
   isreal: true
+  layers:
+    - MESH
 - id: {{ b64enc "e2e::details" }}.1
   name: e2e::details
   type: http
   isreal: true
+  layers:
+    - MESH
 - id: {{ b64enc "e2e::istio-ingressgateway" }}.1
   name: e2e::istio-ingressgateway
   type: http
   isreal: true
+  layers:
+    - MESH
 {{- end }}
 calls:
 {{- contains .calls }}

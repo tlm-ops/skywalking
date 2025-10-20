@@ -19,6 +19,7 @@
 package org.apache.skywalking.oap.server.storage.plugin.banyandb.stream;
 
 import com.google.common.collect.ImmutableSet;
+import org.apache.skywalking.banyandb.v1.client.AbstractQuery;
 import org.apache.skywalking.banyandb.v1.client.RowEntity;
 import org.apache.skywalking.banyandb.v1.client.StreamQuery;
 import org.apache.skywalking.banyandb.v1.client.StreamQueryResponse;
@@ -26,12 +27,12 @@ import org.apache.skywalking.banyandb.v1.client.TimestampRange;
 import org.apache.skywalking.oap.server.core.alarm.AlarmRecord;
 import org.apache.skywalking.oap.server.core.analysis.TimeBucket;
 import org.apache.skywalking.oap.server.core.analysis.manual.searchtag.Tag;
-import org.apache.skywalking.oap.server.core.query.enumeration.Scope;
 import org.apache.skywalking.oap.server.core.query.input.Duration;
 import org.apache.skywalking.oap.server.core.query.type.AlarmMessage;
 import org.apache.skywalking.oap.server.core.query.type.Alarms;
 import org.apache.skywalking.oap.server.core.storage.query.IAlarmQueryDAO;
 import org.apache.skywalking.oap.server.library.util.CollectionUtils;
+import org.apache.skywalking.oap.server.library.util.StringUtil;
 import org.apache.skywalking.oap.server.storage.plugin.banyandb.BanyanDBConverter;
 import org.apache.skywalking.oap.server.storage.plugin.banyandb.BanyanDBStorageClient;
 
@@ -48,7 +49,7 @@ import java.util.Set;
 public class BanyanDBAlarmQueryDAO extends AbstractBanyanDBDAO implements IAlarmQueryDAO {
     private static final Set<String> TAGS = ImmutableSet.of(AlarmRecord.SCOPE,
             AlarmRecord.NAME, AlarmRecord.ID0, AlarmRecord.ID1, AlarmRecord.ALARM_MESSAGE, AlarmRecord.START_TIME,
-            AlarmRecord.RULE_NAME, AlarmRecord.TAGS, AlarmRecord.TAGS_RAW_DATA);
+            AlarmRecord.RULE_NAME, AlarmRecord.TAGS, AlarmRecord.TAGS_RAW_DATA, AlarmRecord.SNAPSHOT);
 
     public BanyanDBAlarmQueryDAO(BanyanDBStorageClient client) {
         super(client);
@@ -71,7 +72,9 @@ public class BanyanDBAlarmQueryDAO extends AbstractBanyanDBDAO implements IAlarm
                         if (Objects.nonNull(scopeId)) {
                             query.and(eq(AlarmRecord.SCOPE, (long) scopeId));
                         }
-
+                        if (StringUtil.isNotEmpty(keyword)) {
+                            query.and(match(AlarmRecord.ALARM_MESSAGE, keyword));
+                        }
                         if (CollectionUtils.isNotEmpty(tags)) {
                             List<String> tagsConditions = new ArrayList<>(tags.size());
                             for (final Tag tag : tags) {
@@ -82,6 +85,7 @@ public class BanyanDBAlarmQueryDAO extends AbstractBanyanDBDAO implements IAlarm
 
                         query.setLimit(limit);
                         query.setOffset(from);
+                        query.setOrderBy(new StreamQuery.OrderBy(AbstractQuery.Sort.DESC));
                     }
                 });
 
@@ -92,18 +96,11 @@ public class BanyanDBAlarmQueryDAO extends AbstractBanyanDBDAO implements IAlarm
             AlarmRecord alarmRecord = builder.storage2Entity(
                     new BanyanDBConverter.StorageToStream(AlarmRecord.INDEX_NAME, rowEntity)
             );
-
-            AlarmMessage message = new AlarmMessage();
-            message.setId(String.valueOf(alarmRecord.getId0()));
-            message.setId1(String.valueOf(alarmRecord.getId1()));
-            message.setMessage(alarmRecord.getAlarmMessage());
-            message.setStartTime(alarmRecord.getStartTime());
-            message.setScope(Scope.Finder.valueOf(alarmRecord.getScope()));
-            message.setScopeId(alarmRecord.getScope());
+            AlarmMessage alarmMessage = buildAlarmMessage(alarmRecord);
             if (!CollectionUtils.isEmpty(alarmRecord.getTagsRawData())) {
-                parserDataBinary(alarmRecord.getTagsRawData(), message.getTags());
+                parseDataBinary(alarmRecord.getTagsRawData(), alarmMessage.getTags());
             }
-            alarms.getMsgs().add(message);
+            alarms.getMsgs().add(alarmMessage);
         }
         return alarms;
     }

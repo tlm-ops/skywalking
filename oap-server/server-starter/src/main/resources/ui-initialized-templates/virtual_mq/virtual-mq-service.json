@@ -1,21 +1,4 @@
-/**
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
- [
+[
   {
     "id": "Virtual-MQ-Service",
     "configuration": {
@@ -28,7 +11,7 @@
           "i": "1",
           "type": "Widget",
           "widget": {
-            "title": "Consume Traffic (calls / min)"
+            "title": "Consumer Traffic (calls / min)"
           },
           "graph": {
             "type": "Line",
@@ -41,14 +24,10 @@
           "expressions": [
             "mq_service_consume_cpm"
           ],
-          "metricMode": "Expression",
-          "typesOfMQE": [
-            "TIME_SERIES_VALUES"
-          ],
           "metricConfig": [
             {
               "unit": "calls / min",
-              "label": "Consume Traffic"
+              "label": "Consumer Traffic"
             }
           ],
           "associate": [
@@ -80,7 +59,7 @@
           "i": "2",
           "type": "Widget",
           "widget": {
-            "title": "Consume Access Successful Rate (%)",
+            "title": "Consumer Access Successful Rate (%)",
             "name": "Successful_Rate"
           },
           "graph": {
@@ -93,10 +72,6 @@
           },
           "expressions": [
             "mq_service_consume_sla/100"
-          ],
-          "metricMode": "Expression",
-          "typesOfMQE": [
-            "TIME_SERIES_VALUES"
           ],
           "metricConfig": [
             {
@@ -144,11 +119,7 @@
             "showYAxis": true
           },
           "expressions": [
-            "relabels(mq_service_consume_percentile{_='0,1,2,3,4'},_='P50,P75,P90,P95,P99')"
-          ],
-          "metricMode": "Expression",
-          "typesOfMQE": [
-            "SINGLE_VALUE"
+            "relabels(mq_service_consume_percentile{p='50,75,90,95,99'},p='50,75,90,95,99',percentile='50,75,90,95,99')"
           ],
           "metricConfig": [
             {
@@ -198,10 +169,6 @@
           "expressions": [
             "mq_service_consume_latency"
           ],
-          "metricMode": "Expression",
-          "typesOfMQE": [
-            "TIME_SERIES_VALUES"
-          ],
           "metricConfig": [
             {
               "unit": "ms",
@@ -237,7 +204,7 @@
           "i": "5",
           "type": "Widget",
           "widget": {
-            "title": "Produce Traffic (calls / min)"
+            "title": "Producer Traffic (calls / min)"
           },
           "graph": {
             "type": "Line",
@@ -250,14 +217,10 @@
           "expressions": [
             "mq_service_produce_cpm"
           ],
-          "metricMode": "Expression",
-          "typesOfMQE": [
-            "TIME_SERIES_VALUES"
-          ],
           "metricConfig": [
             {
               "unit": "calls / min",
-              "label": "Produce Traffic"
+              "label": "Producer Traffic"
             }
           ],
           "associate": [
@@ -289,7 +252,7 @@
           "i": "6",
           "type": "Widget",
           "widget": {
-            "title": "Produce Access Successful Rate (%)",
+            "title": "Producer Access Successful Rate (%)",
             "name": "Successful_Rate"
           },
           "graph": {
@@ -302,10 +265,6 @@
           },
           "expressions": [
             "mq_service_produce_sla/100"
-          ],
-          "metricMode": "Expression",
-          "typesOfMQE": [
-            "TIME_SERIES_VALUES"
           ],
           "metricConfig": [
             {
@@ -356,34 +315,25 @@
             "avg(mq_endpoint_produce_sla)/100",
             "avg(mq_endpoint_produce_cpm)"
           ],
-          "metricMode": "Expression",
-          "typesOfMQE": [
-            "TIME_SERIES_VALUES",
-            "TIME_SERIES_VALUES",
-            "TIME_SERIES_VALUES",
-            "TIME_SERIES_VALUES",
-            "TIME_SERIES_VALUES"
-          ],
-          "moved": false,
           "metricConfig": [
             {
               "unit": "ms",
               "label": "Transmission Latency"
             },
             {
-              "label": "Consume Successful Rate",
+              "label": "Consumer Successful Rate",
               "unit": "%"
             },
             {
-              "label": "Consume Traffic",
+              "label": "Consumer Traffic",
               "unit": "calls / min"
             },
             {
-              "label": "Produce Successful Rate",
+              "label": "Producer Successful Rate",
               "unit": "%"
             },
             {
-              "label": "Produce Traffic",
+              "label": "Producer Traffic",
               "unit": "calls / min"
             }
           ]
@@ -393,7 +343,37 @@
       "entity": "Service",
       "name": "Virtual-MQ-Service",
       "id": "Virtual-MQ-Service",
-      "isRoot": false
+      "isRoot": false,
+      "isDefault": true,
+      "expressions": [
+        "avg(mq_service_consume_latency)",
+        "avg(mq_endpoint_produce_sla)/100",
+        "avg(mq_endpoint_consume_sla)/100",
+        "avg(mq_service_produce_cpm)",
+        "avg(mq_service_consume_cpm)"
+      ],
+      "expressionsConfig": [
+        {
+          "unit": "ms",
+          "label": "Consumer Latency"
+        },
+        {
+          "unit": "%",
+          "label": "Producer Successful Rate"
+        },
+        {
+          "unit": "%",
+          "label": "Consumer Successful Rate"
+        },
+        {
+          "unit": "calls / min",
+          "label": "Producer Traffic"
+        },
+        {
+          "unit": "calls / min",
+          "label": "Consumer Traffic"
+        }
+      ]
     }
   }
 ]

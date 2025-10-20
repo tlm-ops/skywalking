@@ -20,7 +20,8 @@ Defines the relation between scope and entity name.
 An alerting rule is made up of the following elements:
 - **Rule name**. A unique name shown in the alarm message. It must end with `_rule`.
 - **Expression**. A [MQE](../../api/metrics-query-expression.md) expression that defines the conditions of the rule.
-The result type must be `SINGLE_VALUE` and the root operation of the expression must be a [Compare Operation](../../api/metrics-query-expression.md#compare-operation) which provides `1`(true) or `0`(false) result.
+The result type must be `SINGLE_VALUE` and the root operation of the expression must be a 
+[Compare Operation](../../api/metrics-query-expression.md#compare-operation) or [Bool Operation](../../api/metrics-query-expression.md#bool-operation) which provides `1`(true) or `0`(false) result.
 When the result is `1`(true), the alarm will be triggered.
 For example, `avg(service_resp_time / 1000) > 1` is a valid expression to indicate the request latency is slower than 1s. The typical illegal expressions are
     - `avg(service_resp_time > 1000) + 1` expression root doesn't use `Compare Operation`
@@ -53,7 +54,7 @@ the calculation is `((1001 + 10001 + ... + 1001) / 7) > 1000` and the result wou
 * In every minute, the window would shift automatically. At T8, Value8 would be cached, and T1/Value1 would be removed from the window.
 
 **NOTE**: 
-* If the expression include labeled metrics and result has multiple labeled value(e.g. `sum(service_percentile{_='0,1'} > 1000) >= 3`), the alarm will be triggered if any of the labeled value result matches 3 times of the condition(P50 > 1000 or P75 > 1000).
+* If the expression include labeled metrics and result has multiple labeled value(e.g. `sum(service_percentile{p='50,75'} > 1000) >= 3`), the alarm will be triggered if any of the labeled value result matches 3 times of the condition(P50 > 1000 or P75 > 1000).
 * One alarm rule is targeting the same entity level, such as service-level expression (`avg(service_resp_time) > 1000`).
   Set entity names(Include/Exclude names...) according to metrics entity levels,
   do not include different entity levels metrics in the same expression, such as service metrics and endpoint metrics.
@@ -82,21 +83,20 @@ rules:
     period: 10
     message: Service {name} successful rate is less than 85%
   service_resp_time_percentile_rule:
-    expression: sum(service_percentile{_='0,1,2,3,4'} > 1000) >= 3
+    expression: sum(service_percentile{p='50,75,90,95,99'} > 1000) >= 3
     period: 10
     silence-period: 5
     message: Percentile response time of service {name} alarm in 3 minutes of last 10 minutes, due to more than one condition of p50 > 1000, p75 > 1000, p90 > 1000, p95 > 1000, p99 > 1000
   meter_service_status_code_rule:
-    expression: sum(aggregate_labels(meter_status_code{_='4xx,5xx'},sum) > 10) > 3
+    expression: sum(aggregate_labels(meter_status_code{status='4xx,5xx'},sum) > 10) > 3
     period: 10
-    count: 3
     silence-period: 5
     message: The request number of entity {name} 4xx and 5xx status is more than expected.
     hooks:
       - "slack.custom1"
       - "pagerduty.custom1"
   comp_rule:
-    expression: (avg(service_sla / 100) > 80) * (avg(service_percentile{_='0'}) > 1000) == 1
+    expression: (avg(service_sla / 100) > 80) && (avg(service_percentile{p='0'}) > 1000)
     period: 10
     message: Service {name} avg successful rate is less than 80% and P50 of avg response time is over 1000ms in last 10 minutes.
     tags:
@@ -124,6 +124,24 @@ The metrics names are defined in the official [OAL scripts](../../guides/backend
 Currently, metrics from the **Service**, **Service Instance**, **Endpoint**, **Service Relation**, **Service Instance Relation**, **Endpoint Relation** scopes could be used in Alarm, and the **Database access** scope is the same as **Service**.
 
 Submit an issue or a pull request if you want to support any other scopes in Alarm.
+
+### Use the Baseline Predicted Value to trigger the Alarm
+Since 10.2.0, SkyWalking supports using the baseline predicted value in the alarm rule expression. 
+The MQE expression can refer to [Baseline Operation](../../api/metrics-query-expression.md#baseline-operation).
+
+For example, the following rule will compare the service response time with the baseline predicted value in each time bucket, and
+when the service response time is higher than the baseline predicted value in 3 minutes of the last 10 minutes, the alarm will be triggered.
+
+```yaml
+rules:
+  service_resp_time_rule:
+    expression: sum(service_resp_time > baseline(service_resp_time, upper)) > 3
+    period: 10
+    message: Service {name} response time is higher than the baseline predicted value in 3 minutes of last 10 minutes.
+```
+
+Note, the baseline predicted value is calculated based on the historical data of the same time window in the past, which
+is through [AI powered baseline calculation](../ai-pipeline/metrics-baseline-integration.md).
 
 ## Hooks
 Hooks are a way to send alarm messages to the outside world. SkyWalking supports multiple hooks of the same type, each hook can support different configurations. 
@@ -163,7 +181,36 @@ hooks:
 Currently, SkyWalking supports the following hook types:
 
 ### Webhook
-The Webhook requires the peer to be a web container. The alarm message will be sent through HTTP post by `application/json` content type. The JSON format is based on `List<org.apache.skywalking.oap.server.core.alarm.AlarmMessage>` with the following key information:
+The Webhook requires the peer to be a web container. The alarm message will be sent through HTTP post by `application/json` content type after you have set up Webhook hooks as follows: 
+```yml
+webhook:
+  default:
+    is-default: true
+    urls:
+      - http://ip:port/xxx
+      - http://ip:port/yyy
+    custom1:
+      urls:
+        - http://127.0.0.1/custom1
+      # headers config is provided to add custom configurations or authentications that are required from the server side.
+      headers:
+        Authorization: Bearer bearer_token
+    custom2:
+      urls:
+        - http://127.0.0.1/custom2
+      # headers config is provided to add custom configurations or authentications that are required from the server 
+      headers:
+        Authorization: Basic basic_token
+    custom3:
+      urls:
+        - http://127.0.0.1/internal-hook
+      # headers config is provided to add custom configurations or authentications that are required from the server 
+      headers:
+        x-company-token: whatever-token-defined-internally-within-the-company
+        x-company-header: arbitrary-additional-http-headers
+```
+
+The JSON format is based on `List<org.apache.skywalking.oap.server.core.alarm.AlarmMessage>` with the following key information:
 - **scopeId**, **scope**. All scopes are defined in `org.apache.skywalking.oap.server.core.source.DefaultScopeDefine`.
 - **name**. Target scope entity name. Please follow the [entity name definitions](#entity-name).
 - **id0**. The ID of the scope entity that matches with the name. When using the relation scope, it is the source entity ID.
@@ -205,7 +252,15 @@ See the following example:
 ```
 
 ### gRPC
-The alarm message will be sent through remote gRPC method by `Protobuf` content type. 
+The alarm message will be sent through remote gRPC method by `Protobuf` content type after you have set up gRPC hooks as follows:
+```yml
+gRPC:
+  default:
+    is-default: true
+    target-host: ip
+    target-port: port
+```
+
 The message contains key information which are defined in `oap-server/server-alarm-plugin/src/main/proto/alarm-hook.proto`.
 
 Part of the protocol looks like this:

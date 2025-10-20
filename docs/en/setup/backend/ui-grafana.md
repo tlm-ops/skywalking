@@ -13,6 +13,11 @@ Grafana UI is an extension on our support of PromQL APIs. We don't maintain or p
 In the data source config panel, chose the `Prometheus` and set the url to the OAP server address, the default port is `9090`.
 <img src="https://skywalking.apache.org/screenshots/9.6.0/promql/grafana-datasource.jpg"/>
 
+### SkyWalking Data Source
+Before you start, please install the [SkyWalking data source plugin](https://github.com/apache/skywalking-grafana-plugins).
+In the data source config panel, chose the `SkyWalking` and set the url to the OAP server `graphql` service address, the default port is `12800`.
+<img src="https://skywalking.apache.org/screenshots/9.7.0/promql/grafana-skywalking-datasource.jpg"/>
+
 ### Loki Data Source
 In the data source config panel, chose the `Loki` and set the url to the OAP server address, the default port is `3100`.
 <img src="https://skywalking.apache.org/screenshots/9.6.0/logql/grafana-loki-datasource.jpg"/>
@@ -60,6 +65,19 @@ General settings:
 #### Sampled Records
 Same as the Sort Metrics.
 
+## Configure Topology Dashboards
+
+### Dashboards Settings
+For now, SkyWalking support `General Service` and `Service Mesh` topology dashboards, the layer is `GENERAL` and `MESH` respectively.
+The following configuration can reuse the above `General Service` dashboard and add a new variable `Plugin_SkyWalking` for the dashboard:
+<img src="https://skywalking.apache.org/screenshots/9.7.0/promql/grafana-variables-plugin-sw.jpg"/>
+
+### Add Topology Panel
+1. Chose the Node Graph chart.
+2. Set `Layer` and `Service` by the variables. If you want to show all services in this layer, set `Service` empty.
+3. Set `Node Metrics` and `Edge Metrics` which you want to show on the topology.
+<img src="https://skywalking.apache.org/screenshots/9.7.0/promql/grafana-panels-topology.jpg"/>
+
 ## Configure Log Dashboard
 ### Dashboards Settings
 The following steps are the example of config a log dashboard:
@@ -82,6 +100,23 @@ The following steps show how to add a log panel.
 to prevent it value be escaped.
 4. Test query and save the panel.
 <img src="https://skywalking.apache.org/screenshots/9.6.0/logql/grafana-logs-panel.jpg"/>
+
+## Configure Relation Dashboards
+### Dashboards Settings
+The following steps are the example of config a `General Relation` dashboard:
+1. Create a dashboard named `General Relation`.
+2. Configure variables for the dashboard:
+   <img src="https://skywalking.apache.org/screenshots/10.1.0/promql/grafana-relation-variables1.png"/>
+   After configure, you can select the service/instance/endpoint and the dest service/instance/endpoint on the top of the dashboard:
+   <img src="https://skywalking.apache.org/screenshots/10.1.0/promql/grafana-relation-variables2.png"/>
+### Add Relation Metrics Panel
+The following contents show how to add relation metric panels.
+1. Chose the metrics and chart.
+2. Set `Query options`, `Connect null values`, `Show points` and `Returned Labels`. Please refer `Configure Metric Dashboards` part.
+3. Add PromQL expression, For all scopes, set `Layer`, `Dest Layer`, `Service` and `Dest Service` by the variables. For service instance relation scope, extra set `Service Instance` and `Dest Service Instance`.
+For endpoint relation scope, extra set `Endpoint` and `Dest Endpoint`.
+4. Test query and save the panel.
+<img src="https://skywalking.apache.org/screenshots/10.1.0/promql/grafana-relation-panel.png"/>
 
 ## Preview on demo.skywalking.a.o
 SkyWalking community provides a preview site for services of `General` and `Service Mesh` layers from the demo environment.

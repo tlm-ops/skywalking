@@ -1,5 +1,4 @@
-
- [
+[
   {
     "id": "Browser-Page",
     "configuration": {
@@ -35,11 +34,7 @@
                     "showYAxis": true
                   },
                   "expressions": [
-                    "relabels(browser_app_page_fmp_percentile{_='0,1,2,3,4'},_='P50,P75,P90,P95,P99')"
-                  ],
-                  "metricMode": "Expression",
-                  "typesOfMQE": [
-                    "SINGLE_VALUE"
+                    "relabels(browser_app_page_fmp_percentile{p='50,75,90,95,99'},p='50,75,90,95,99',percentile='50,75,90,95,99')"
                   ],
                   "metricConfig": [
                     {
@@ -68,6 +63,30 @@
                     },
                     {
                       "widgetId": "12-0-10"
+                    },
+                    {
+                      "widgetId": "12-0-11"
+                    },
+                    {
+                      "widgetId": "12-0-12"
+                    },
+                    {
+                      "widgetId": "12-0-13"
+                    },
+                    {
+                      "widgetId": "12-0-14"
+                    },
+                    {
+                      "widgetId": "12-0-15"
+                    },
+                    {
+                      "widgetId": "12-0-16"
+                    },
+                    {
+                      "widgetId": "12-0-17"
+                    },
+                    {
+                      "widgetId": "12-0-18"
                     }
                   ]
                 },
@@ -91,11 +110,7 @@
                     "showYAxis": true
                   },
                   "expressions": [
-                    "relabels(browser_app_page_first_pack_percentile{_='0,1,2,3,4'},_='P50,P75,P90,P95,P99')"
-                  ],
-                  "metricMode": "Expression",
-                  "typesOfMQE": [
-                    "SINGLE_VALUE"
+                    "relabels(browser_app_page_first_pack_percentile{p='50,75,90,95,99'},p='50,75,90,95,99',percentile='50,75,90,95,99')"
                   ],
                   "metricConfig": [
                     {
@@ -124,6 +139,30 @@
                     },
                     {
                       "widgetId": "12-0-10"
+                    },
+                    {
+                      "widgetId": "12-0-11"
+                    },
+                    {
+                      "widgetId": "12-0-12"
+                    },
+                    {
+                      "widgetId": "12-0-13"
+                    },
+                    {
+                      "widgetId": "12-0-14"
+                    },
+                    {
+                      "widgetId": "12-0-15"
+                    },
+                    {
+                      "widgetId": "12-0-16"
+                    },
+                    {
+                      "widgetId": "12-0-17"
+                    },
+                    {
+                      "widgetId": "12-0-18"
                     }
                   ]
                 },
@@ -147,11 +186,7 @@
                     "showYAxis": true
                   },
                   "expressions": [
-                    "relabels(browser_app_page_fpt_percentile{_='0,1,2,3,4'},_='P50,P75,P90,P95,P99')"
-                  ],
-                  "metricMode": "Expression",
-                  "typesOfMQE": [
-                    "SINGLE_VALUE"
+                    "relabels(browser_app_page_fpt_percentile{p='50,75,90,95,99'},p='50,75,90,95,99',percentile='50,75,90,95,99')"
                   ],
                   "metricConfig": [
                     {
@@ -180,6 +215,30 @@
                     },
                     {
                       "widgetId": "12-0-10"
+                    },
+                    {
+                      "widgetId": "12-0-11"
+                    },
+                    {
+                      "widgetId": "12-0-12"
+                    },
+                    {
+                      "widgetId": "12-0-13"
+                    },
+                    {
+                      "widgetId": "12-0-14"
+                    },
+                    {
+                      "widgetId": "12-0-15"
+                    },
+                    {
+                      "widgetId": "12-0-16"
+                    },
+                    {
+                      "widgetId": "12-0-17"
+                    },
+                    {
+                      "widgetId": "12-0-18"
                     }
                   ]
                 },
@@ -203,11 +262,7 @@
                     "showYAxis": true
                   },
                   "expressions": [
-                    "relabels(browser_app_page_dom_ready_percentile{_='0,1,2,3,4'},_='P50,P75,P90,P95,P99')"
-                  ],
-                  "metricMode": "Expression",
-                  "typesOfMQE": [
-                    "SINGLE_VALUE"
+                    "relabels(browser_app_page_dom_ready_percentile{p='50,75,90,95,99'},p='50,75,90,95,99',percentile='50,75,90,95,99')"
                   ],
                   "metricConfig": [
                     {
@@ -236,6 +291,30 @@
                     },
                     {
                       "widgetId": "12-0-10"
+                    },
+                    {
+                      "widgetId": "12-0-11"
+                    },
+                    {
+                      "widgetId": "12-0-12"
+                    },
+                    {
+                      "widgetId": "12-0-13"
+                    },
+                    {
+                      "widgetId": "12-0-14"
+                    },
+                    {
+                      "widgetId": "12-0-15"
+                    },
+                    {
+                      "widgetId": "12-0-16"
+                    },
+                    {
+                      "widgetId": "12-0-17"
+                    },
+                    {
+                      "widgetId": "12-0-18"
                     }
                   ]
                 },
@@ -259,11 +338,7 @@
                     "showYAxis": true
                   },
                   "expressions": [
-                    "relabels(browser_app_page_ttl_percentile{_='0,1,2,3,4'},_='P50,P75,P90,P95,P99')"
-                  ],
-                  "metricMode": "Expression",
-                  "typesOfMQE": [
-                    "SINGLE_VALUE"
+                    "relabels(browser_app_page_ttl_percentile{p='50,75,90,95,99'},p='50,75,90,95,99',percentile='50,75,90,95,99')"
                   ],
                   "metricConfig": [
                     {
@@ -292,6 +367,30 @@
                     },
                     {
                       "widgetId": "12-0-10"
+                    },
+                    {
+                      "widgetId": "12-0-11"
+                    },
+                    {
+                      "widgetId": "12-0-12"
+                    },
+                    {
+                      "widgetId": "12-0-13"
+                    },
+                    {
+                      "widgetId": "12-0-14"
+                    },
+                    {
+                      "widgetId": "12-0-15"
+                    },
+                    {
+                      "widgetId": "12-0-16"
+                    },
+                    {
+                      "widgetId": "12-0-17"
+                    },
+                    {
+                      "widgetId": "12-0-18"
                     }
                   ]
                 },
@@ -315,11 +414,7 @@
                     "showYAxis": true
                   },
                   "expressions": [
-                    "relabels(browser_app_page_load_page_percentile{_='0,1,2,3,4'},_='P50,P75,P90,P95,P99')"
-                  ],
-                  "metricMode": "Expression",
-                  "typesOfMQE": [
-                    "SINGLE_VALUE"
+                    "relabels(browser_app_page_load_page_percentile{p='50,75,90,95,99'},p='50,75,90,95,99',percentile='50,75,90,95,99')"
                   ],
                   "metricConfig": [
                     {
@@ -348,6 +443,30 @@
                     },
                     {
                       "widgetId": "12-0-10"
+                    },
+                    {
+                      "widgetId": "12-0-11"
+                    },
+                    {
+                      "widgetId": "12-0-12"
+                    },
+                    {
+                      "widgetId": "12-0-13"
+                    },
+                    {
+                      "widgetId": "12-0-14"
+                    },
+                    {
+                      "widgetId": "12-0-15"
+                    },
+                    {
+                      "widgetId": "12-0-16"
+                    },
+                    {
+                      "widgetId": "12-0-17"
+                    },
+                    {
+                      "widgetId": "12-0-18"
                     }
                   ]
                 },
@@ -382,19 +501,6 @@
                     "browser_app_page_tcp_avg",
                     "browser_app_page_ttfb_avg"
                   ],
-                  "metricMode": "Expression",
-                  "typesOfMQE": [
-                    "TIME_SERIES_VALUES",
-                    "TIME_SERIES_VALUES",
-                    "TIME_SERIES_VALUES",
-                    "TIME_SERIES_VALUES",
-                    "TIME_SERIES_VALUES",
-                    "TIME_SERIES_VALUES",
-                    "TIME_SERIES_VALUES",
-                    "TIME_SERIES_VALUES",
-                    "TIME_SERIES_VALUES",
-                    "TIME_SERIES_VALUES"
-                  ],
                   "associate": [
                     {
                       "widgetId": "12-0-1"
@@ -416,6 +522,30 @@
                     },
                     {
                       "widgetId": "12-0-10"
+                    },
+                    {
+                      "widgetId": "12-0-11"
+                    },
+                    {
+                      "widgetId": "12-0-12"
+                    },
+                    {
+                      "widgetId": "12-0-13"
+                    },
+                    {
+                      "widgetId": "12-0-14"
+                    },
+                    {
+                      "widgetId": "12-0-15"
+                    },
+                    {
+                      "widgetId": "12-0-16"
+                    },
+                    {
+                      "widgetId": "12-0-17"
+                    },
+                    {
+                      "widgetId": "12-0-18"
                     }
                   ],
                   "metricConfig": [
@@ -472,13 +602,6 @@
                     "browser_app_page_unknown_error_sum",
                     "browser_app_page_ajax_error_sum"
                   ],
-                  "metricMode": "Expression",
-                  "typesOfMQE": [
-                    "TIME_SERIES_VALUES",
-                    "TIME_SERIES_VALUES",
-                    "TIME_SERIES_VALUES",
-                    "TIME_SERIES_VALUES"
-                  ],
                   "associate": [
                     {
                       "widgetId": "12-0-1"
@@ -500,6 +623,30 @@
                     },
                     {
                       "widgetId": "12-0-0"
+                    },
+                    {
+                      "widgetId": "12-0-11"
+                    },
+                    {
+                      "widgetId": "12-0-12"
+                    },
+                    {
+                      "widgetId": "12-0-13"
+                    },
+                    {
+                      "widgetId": "12-0-14"
+                    },
+                    {
+                      "widgetId": "12-0-15"
+                    },
+                    {
+                      "widgetId": "12-0-16"
+                    },
+                    {
+                      "widgetId": "12-0-17"
+                    },
+                    {
+                      "widgetId": "12-0-18"
                     }
                   ],
                   "metricConfig": [
@@ -514,6 +661,564 @@
                     },
                     {
                       "label": "ajax_error_sum"
+                    }
+                  ]
+                },
+                {
+                  "x": 0,
+                  "y": 45,
+                  "w": 6,
+                  "h": 15,
+                  "i": "11",
+                  "type": "Widget",
+                  "expressions": [
+                    "browser_app_web_vitals_fmp_avg"
+                  ],
+                  "graph": {
+                    "type": "Line",
+                    "step": false,
+                    "smooth": false,
+                    "showSymbol": true,
+                    "showXAxis": true,
+                    "showYAxis": true
+                  },
+                  "widget": {
+                    "title": "Web Vitals First Meaningful Paint Latency(ms)"
+                  },
+                  "associate": [
+                    {
+                      "widgetId": "12-0-1"
+                    },
+                    {
+                      "widgetId": "12-0-2"
+                    },
+                    {
+                      "widgetId": "12-0-3"
+                    },
+                    {
+                      "widgetId": "12-0-4"
+                    },
+                    {
+                      "widgetId": "12-0-8"
+                    },
+                    {
+                      "widgetId": "12-0-0"
+                    },
+                    {
+                      "widgetId": "12-0-10"
+                    },
+                    {
+                      "widgetId": "12-0-11"
+                    },
+                    {
+                      "widgetId": "12-0-12"
+                    },
+                    {
+                      "widgetId": "12-0-13"
+                    },
+                    {
+                      "widgetId": "12-0-14"
+                    },
+                    {
+                      "widgetId": "12-0-15"
+                    },
+                    {
+                      "widgetId": "12-0-16"
+                    },
+                    {
+                      "widgetId": "12-0-17"
+                    },
+                    {
+                      "widgetId": "12-0-18"
+                    }
+                  ]
+                },
+                {
+                  "x": 6,
+                  "y": 45,
+                  "w": 6,
+                  "h": 15,
+                  "i": "12",
+                  "type": "Widget",
+                  "expressions": [
+                    "browser_app_web_vitals_cls_avg"
+                  ],
+                  "graph": {
+                    "type": "Line",
+                    "step": false,
+                    "smooth": false,
+                    "showSymbol": true,
+                    "showXAxis": true,
+                    "showYAxis": true
+                  },
+                  "widget": {
+                    "title": "Web Vitals Cumulative Layout Shift Latency(ms)"
+                  },
+                  "associate": [
+                    {
+                      "widgetId": "12-0-1"
+                    },
+                    {
+                      "widgetId": "12-0-2"
+                    },
+                    {
+                      "widgetId": "12-0-3"
+                    },
+                    {
+                      "widgetId": "12-0-4"
+                    },
+                    {
+                      "widgetId": "12-0-8"
+                    },
+                    {
+                      "widgetId": "12-0-0"
+                    },
+                    {
+                      "widgetId": "12-0-10"
+                    },
+                    {
+                      "widgetId": "12-0-11"
+                    },
+                    {
+                      "widgetId": "12-0-12"
+                    },
+                    {
+                      "widgetId": "12-0-13"
+                    },
+                    {
+                      "widgetId": "12-0-14"
+                    },
+                    {
+                      "widgetId": "12-0-15"
+                    },
+                    {
+                      "widgetId": "12-0-16"
+                    },
+                    {
+                      "widgetId": "12-0-17"
+                    },
+                    {
+                      "widgetId": "12-0-18"
+                    }
+                  ]
+                },
+                {
+                  "x": 12,
+                  "y": 45,
+                  "w": 6,
+                  "h": 15,
+                  "i": "13",
+                  "type": "Widget",
+                  "expressions": [
+                    "browser_app_web_vitals_lcp_avg"
+                  ],
+                  "graph": {
+                    "type": "Line",
+                    "step": false,
+                    "smooth": false,
+                    "showSymbol": true,
+                    "showXAxis": true,
+                    "showYAxis": true
+                  },
+                  "widget": {
+                    "title": "Web Vitals Largest Contentful Paint Latency(ms)"
+                  },
+                  "associate": [
+                    {
+                      "widgetId": "12-0-1"
+                    },
+                    {
+                      "widgetId": "12-0-2"
+                    },
+                    {
+                      "widgetId": "12-0-3"
+                    },
+                    {
+                      "widgetId": "12-0-4"
+                    },
+                    {
+                      "widgetId": "12-0-8"
+                    },
+                    {
+                      "widgetId": "12-0-0"
+                    },
+                    {
+                      "widgetId": "12-0-10"
+                    },
+                    {
+                      "widgetId": "12-0-11"
+                    },
+                    {
+                      "widgetId": "12-0-12"
+                    },
+                    {
+                      "widgetId": "12-0-13"
+                    },
+                    {
+                      "widgetId": "12-0-14"
+                    },
+                    {
+                      "widgetId": "12-0-15"
+                    },
+                    {
+                      "widgetId": "12-0-16"
+                    },
+                    {
+                      "widgetId": "12-0-17"
+                    },
+                    {
+                      "widgetId": "12-0-18"
+                    }
+                  ]
+                },
+                {
+                  "x": 0,
+                  "y": 60,
+                  "w": 6,
+                  "h": 15,
+                  "i": "14",
+                  "type": "Widget",
+                  "expressions": [
+                    "browser_app_resource_duration_avg"
+                  ],
+                  "graph": {
+                    "type": "Line",
+                    "step": false,
+                    "smooth": false,
+                    "showSymbol": true,
+                    "showXAxis": true,
+                    "showYAxis": true
+                  },
+                  "widget": {
+                    "title": "Load Duration(ms)"
+                  },
+                  "associate": [
+                    {
+                      "widgetId": "12-0-1"
+                    },
+                    {
+                      "widgetId": "12-0-2"
+                    },
+                    {
+                      "widgetId": "12-0-3"
+                    },
+                    {
+                      "widgetId": "12-0-4"
+                    },
+                    {
+                      "widgetId": "12-0-8"
+                    },
+                    {
+                      "widgetId": "12-0-0"
+                    },
+                    {
+                      "widgetId": "12-0-10"
+                    },
+                    {
+                      "widgetId": "12-0-11"
+                    },
+                    {
+                      "widgetId": "12-0-12"
+                    },
+                    {
+                      "widgetId": "12-0-13"
+                    },
+                    {
+                      "widgetId": "12-0-14"
+                    },
+                    {
+                      "widgetId": "12-0-15"
+                    },
+                    {
+                      "widgetId": "12-0-16"
+                    },
+                    {
+                      "widgetId": "12-0-17"
+                    },
+                    {
+                      "widgetId": "12-0-18"
+                    }
+                  ]
+                },
+                {
+                  "x": 6,
+                  "y": 60,
+                  "w": 6,
+                  "h": 15,
+                  "i": "15",
+                  "type": "Widget",
+                  "expressions": [
+                    "browser_app_resource_size_avg/1024"
+                  ],
+                  "graph": {
+                    "type": "Line",
+                    "step": false,
+                    "smooth": false,
+                    "showSymbol": true,
+                    "showXAxis": true,
+                    "showYAxis": true
+                  },
+                  "widget": {
+                    "title": "Resource Size(KB)"
+                  },
+                  "associate": [
+                    {
+                      "widgetId": "12-0-1"
+                    },
+                    {
+                      "widgetId": "12-0-2"
+                    },
+                    {
+                      "widgetId": "12-0-3"
+                    },
+                    {
+                      "widgetId": "12-0-4"
+                    },
+                    {
+                      "widgetId": "12-0-8"
+                    },
+                    {
+                      "widgetId": "12-0-0"
+                    },
+                    {
+                      "widgetId": "12-0-10"
+                    },
+                    {
+                      "widgetId": "12-0-11"
+                    },
+                    {
+                      "widgetId": "12-0-12"
+                    },
+                    {
+                      "widgetId": "12-0-13"
+                    },
+                    {
+                      "widgetId": "12-0-14"
+                    },
+                    {
+                      "widgetId": "12-0-15"
+                    },
+                    {
+                      "widgetId": "12-0-16"
+                    },
+                    {
+                      "widgetId": "12-0-17"
+                    },
+                    {
+                      "widgetId": "12-0-18"
+                    }
+                  ]
+                },
+                {
+                  "x": 18,
+                  "y": 60,
+                  "w": 6,
+                  "h": 15,
+                  "i": "16",
+                  "type": "Widget",
+                  "expressions": [
+                    "browser_app_resource_protocol_count"
+                  ],
+                  "graph": {
+                    "type": "Line",
+                    "step": false,
+                    "smooth": false,
+                    "showSymbol": true,
+                    "showXAxis": true,
+                    "showYAxis": true
+                  },
+                  "widget": {
+                    "title": "Resource Load Protocol Count Per Min"
+                  },
+                  "associate": [
+                    {
+                      "widgetId": "12-0-1"
+                    },
+                    {
+                      "widgetId": "12-0-2"
+                    },
+                    {
+                      "widgetId": "12-0-3"
+                    },
+                    {
+                      "widgetId": "12-0-4"
+                    },
+                    {
+                      "widgetId": "12-0-8"
+                    },
+                    {
+                      "widgetId": "12-0-0"
+                    },
+                    {
+                      "widgetId": "12-0-10"
+                    },
+                    {
+                      "widgetId": "12-0-11"
+                    },
+                    {
+                      "widgetId": "12-0-12"
+                    },
+                    {
+                      "widgetId": "12-0-13"
+                    },
+                    {
+                      "widgetId": "12-0-14"
+                    },
+                    {
+                      "widgetId": "12-0-15"
+                    },
+                    {
+                      "widgetId": "12-0-16"
+                    },
+                    {
+                      "widgetId": "12-0-17"
+                    },
+                    {
+                      "widgetId": "12-0-18"
+                    }
+                  ]
+                },
+                {
+                  "x": 12,
+                  "y": 60,
+                  "w": 6,
+                  "h": 15,
+                  "i": "17",
+                  "type": "Widget",
+                  "expressions": [
+                    "browser_app_resource_type_count"
+                  ],
+                  "graph": {
+                    "type": "Line",
+                    "step": false,
+                    "smooth": false,
+                    "showSymbol": true,
+                    "showXAxis": true,
+                    "showYAxis": true
+                  },
+                  "widget": {
+                    "title": "Resource Type Load Count Per Min"
+                  },
+                  "associate": [
+                    {
+                      "widgetId": "12-0-1"
+                    },
+                    {
+                      "widgetId": "12-0-2"
+                    },
+                    {
+                      "widgetId": "12-0-3"
+                    },
+                    {
+                      "widgetId": "12-0-4"
+                    },
+                    {
+                      "widgetId": "12-0-8"
+                    },
+                    {
+                      "widgetId": "12-0-0"
+                    },
+                    {
+                      "widgetId": "12-0-10"
+                    },
+                    {
+                      "widgetId": "12-0-11"
+                    },
+                    {
+                      "widgetId": "12-0-12"
+                    },
+                    {
+                      "widgetId": "12-0-13"
+                    },
+                    {
+                      "widgetId": "12-0-14"
+                    },
+                    {
+                      "widgetId": "12-0-15"
+                    },
+                    {
+                      "widgetId": "12-0-16"
+                    },
+                    {
+                      "widgetId": "12-0-17"
+                    },
+                    {
+                      "widgetId": "12-0-18"
+                    }
+                  ]
+                },
+                {
+                  "x": 18,
+                  "y": 45,
+                  "w": 6,
+                  "h": 15,
+                  "i": "18",
+                  "type": "Widget",
+                  "expressions": [
+                    "relabels(browser_app_web_interaction_inp_percentile{p='50,75,90,95,99'},p='50,75,90,95,99',percentile='50,75,90,95,99')"
+                  ],
+                  "graph": {
+                    "type": "Line",
+                    "step": false,
+                    "smooth": false,
+                    "showSymbol": true,
+                    "showXAxis": true,
+                    "showYAxis": true
+                  },
+                  "widget": {
+                    "title": "Web Interaction to Next Paint Use Time(ms)"
+                  },
+                  "associate": [
+                    {
+                      "widgetId": "12-0-1"
+                    },
+                    {
+                      "widgetId": "12-0-2"
+                    },
+                    {
+                      "widgetId": "12-0-3"
+                    },
+                    {
+                      "widgetId": "12-0-4"
+                    },
+                    {
+                      "widgetId": "12-0-8"
+                    },
+                    {
+                      "widgetId": "12-0-0"
+                    },
+                    {
+                      "widgetId": "12-0-10"
+                    },
+                    {
+                      "widgetId": "12-0-11"
+                    },
+                    {
+                      "widgetId": "12-0-12"
+                    },
+                    {
+                      "widgetId": "12-0-13"
+                    },
+                    {
+                      "widgetId": "12-0-14"
+                    },
+                    {
+                      "widgetId": "12-0-15"
+                    },
+                    {
+                      "widgetId": "12-0-16"
+                    },
+                    {
+                      "widgetId": "12-0-17"
+                    },
+                    {
+                      "widgetId": "12-0-18"
+                    }
+                  ],
+                  "metricConfig": [
+                    {
+                      "unit": "ms",
+                      "label": "Time"
                     }
                   ]
                 }
@@ -560,7 +1265,6 @@
       "layer": "BROWSER",
       "entity": "Endpoint",
       "name": "Browser-Page",
-      "id": "Browser-Page",
       "isRoot": false
     }
   }

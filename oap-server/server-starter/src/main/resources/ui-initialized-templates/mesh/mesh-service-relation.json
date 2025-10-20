@@ -74,12 +74,8 @@
                       "widgetId": "0-0-13"
                     }
                   ],
-                  "metricMode": "Expression",
                   "expressions": [
-                    "relabels(service_relation_server_percentile{_='0,1,2,3,4'},_='P50,P75,P90,P95,P99')"
-                  ],
-                  "typesOfMQE": [
-                    "TIME_SERIES_VALUES"
+                    "relabels(service_relation_server_percentile{p='50,75,90,95,99'},p='50,75,90,95,99',percentile='50,75,90,95,99')"
                   ]
                 },
                 {
@@ -142,7 +138,6 @@
                       "widgetId": "0-0-13"
                     }
                   ],
-                  "metricMode": "Expression",
                   "metricConfig": [
                     {
                       "label": "Client"
@@ -154,10 +149,6 @@
                   "expressions": [
                     "service_relation_client_resp_time",
                     "service_relation_server_resp_time"
-                  ],
-                  "typesOfMQE": [
-                    "TIME_SERIES_VALUES",
-                    "TIME_SERIES_VALUES"
                   ]
                 },
                 {
@@ -220,12 +211,8 @@
                       "widgetId": "0-0-13"
                     }
                   ],
-                  "metricMode": "Expression",
                   "expressions": [
-                    "relabels(service_relation_client_percentile{_='0,1,2,3,4'},_='P50,P75,P90,P95,P99')"
-                  ],
-                  "typesOfMQE": [
-                    "TIME_SERIES_VALUES"
+                    "relabels(service_relation_client_percentile{p='50,75,90,95,99'},p='50,75,90,95,99',percentile='50,75,90,95,99')"
                   ]
                 },
                 {
@@ -296,14 +283,9 @@
                       "widgetId": "0-0-13"
                     }
                   ],
-                  "metricMode": "Expression",
                   "expressions": [
                     "service_relation_client_call_sla/100",
                     "service_relation_server_call_sla/100"
-                  ],
-                  "typesOfMQE": [
-                    "TIME_SERIES_VALUES",
-                    "TIME_SERIES_VALUES"
                   ]
                 },
                 {
@@ -366,7 +348,6 @@
                       "widgetId": "0-0-13"
                     }
                   ],
-                  "metricMode": "Expression",
                   "metricConfig": [
                     {
                       "label": "Client"
@@ -378,10 +359,6 @@
                   "expressions": [
                     "service_relation_client_cpm",
                     "service_relation_server_cpm"
-                  ],
-                  "typesOfMQE": [
-                    "TIME_SERIES_VALUES",
-                    "TIME_SERIES_VALUES"
                   ]
                 },
                 {
@@ -445,14 +422,9 @@
                     "showXAxis": true,
                     "showYAxis": true
                   },
-                  "metricMode": "Expression",
                   "expressions": [
                     "service_relation_server_received",
                     "service_relation_server_sent"
-                  ],
-                  "typesOfMQE": [
-                    "TIME_SERIES_VALUES",
-                    "TIME_SERIES_VALUES"
                   ]
                 },
                 {
@@ -516,14 +488,9 @@
                     "showXAxis": true,
                     "showYAxis": true
                   },
-                  "metricMode": "Expression",
                   "expressions": [
                     "service_relation_client_received",
                     "service_relation_client_sent"
-                  ],
-                  "typesOfMQE": [
-                    "TIME_SERIES_VALUES",
-                    "TIME_SERIES_VALUES"
                   ]
                 },
                 {
@@ -587,7 +554,6 @@
                       "widgetId": "0-0-13"
                     }
                   ],
-                  "metricMode": "Expression",
                   "metricConfig": [
                     {
                       "label": "Client"
@@ -599,10 +565,6 @@
                   "expressions": [
                     "service_client_sidecar_internal_req_latency_nanos",
                     "service_server_sidecar_internal_req_latency_nanos"
-                  ],
-                  "typesOfMQE": [
-                    "TIME_SERIES_VALUES",
-                    "TIME_SERIES_VALUES"
                   ]
                 },
                 {
@@ -666,7 +628,6 @@
                       "widgetId": "0-0-13"
                     }
                   ],
-                  "metricMode": "Expression",
                   "metricConfig": [
                     {
                       "label": "Client"
@@ -678,10 +639,6 @@
                   "expressions": [
                     "service_client_sidecar_internal_resp_latency_nanos",
                     "service_server_sidecar_internal_resp_latency_nanos"
-                  ],
-                  "typesOfMQE": [
-                    "TIME_SERIES_VALUES",
-                    "TIME_SERIES_VALUES"
                   ]
                 }
               ]
@@ -701,56 +658,58 @@
                   },
                   "linkDashboard": "Mesh-Instance-Relation",
                   "nodeDashboard": "Mesh-Instance",
-                  "linkServerMetrics": [
-                    "service_instance_relation_server_resp_time",
-                    "service_instance_relation_server_cpm"
-                  ],
-                  "linkClientMetrics": [
-                    "service_instance_relation_client_resp_time",
-                    "service_instance_relation_client_cpm"
-                  ],
-                  "nodeMetrics": [
-                    "service_instance_sla",
-                    "service_instance_cpm",
-                    "service_instance_resp_time"
-                  ],
-                  "legend": [],
+                  "nodeMetrics": [],
                   "description": {},
                   "nodeMetricConfig": [
                     {
-                      "unit": "%",
-                      "calculation": "percentage",
-                      "label": "Success Rate"
+                      "label": "Success Rate",
+                      "unit": "%"
                     },
                     {
-                      "unit": "calls or packets / min",
-                      "label": "Load"
+                      "label": "Load",
+                      "unit": "calls or packets / min"
                     },
                     {
-                      "unit": "ms",
-                      "label": "Latency"
+                      "label": "Latency",
+                      "unit": "ms"
                     }
                   ],
                   "linkServerMetricConfig": [
                     {
-                      "unit": "ms",
-                      "label": "Server Latency"
+                      "label": "Server Latency",
+                      "unit": "ms"
                     },
                     {
-                      "unit": "calls or packets / min ",
-                      "label": "Server Load"
+                      "label": "Server Load",
+                      "unit": "calls or packets / min"
                     }
                   ],
                   "linkClientMetricConfig": [
                     {
-                      "unit": "ms",
-                      "label": "Client Latency"
+                      "label": "Client Latency",
+                      "unit": "ms"
                     },
                     {
-                      "unit": "calls or packets / min",
-                      "label": "Client Load"
+                      "label": "Client Load",
+                      "unit": "calls or packets / min"
                     }
-                  ]
+                  ],
+                  "linkServerExpressions": [
+                    "avg(service_instance_relation_server_resp_time)",
+                    "avg(service_instance_relation_server_cpm)"
+                  ],
+                  "linkClientExpressions": [
+                    "avg(service_instance_relation_client_resp_time)",
+                    "avg(service_instance_relation_client_cpm)"
+                  ],
+                  "nodeExpressions": [
+                    "avg(service_instance_sla/100)",
+                    "avg(service_instance_cpm)",
+                    "avg(service_instance_resp_time)"
+                  ],
+                  "legendMQE": {
+                    "expression": ""
+                  }
                 }
               ]
             },
@@ -775,11 +734,8 @@
                     "showXAxis": true,
                     "showYAxis": true
                   },
-                  "metrics": [
+                  "expressions": [
                     "envoy_sr_cluster_up_cx_none_healthy_incr"
-                  ],
-                  "metricTypes": [
-                    "readMetricsValues"
                   ]
                 },
                 {
@@ -800,11 +756,8 @@
                     "showXAxis": true,
                     "showYAxis": true
                   },
-                  "metrics": [
+                  "expressions": [
                     "envoy_sr_cluster_lb_healthy_panic_incr"
-                  ],
-                  "metricTypes": [
-                    "readMetricsValues"
                   ]
                 },
                 {
@@ -825,11 +778,8 @@
                     "showXAxis": true,
                     "showYAxis": true
                   },
-                  "metrics": [
+                  "expressions": [
                     "envoy_sr_cluster_up_rq_pending_active"
-                  ],
-                  "metricTypes": [
-                    "readMetricsValues"
                   ]
                 },
                 {
@@ -850,11 +800,8 @@
                     "showXAxis": true,
                     "showYAxis": true
                   },
-                  "metrics": [
+                  "expressions": [
                     "envoy_sr_cluster_up_cx_active"
-                  ],
-                  "metricTypes": [
-                    "readMetricsValues"
                   ]
                 },
                 {
@@ -875,11 +822,8 @@
                     "showXAxis": true,
                     "showYAxis": true
                   },
-                  "metrics": [
+                  "expressions": [
                     "envoy_sr_cluster_up_rq_active"
-                  ],
-                  "metricTypes": [
-                    "readMetricsValues"
                   ]
                 },
                 {
@@ -900,11 +844,8 @@
                     "showXAxis": true,
                     "showYAxis": true
                   },
-                  "metrics": [
+                  "expressions": [
                     "envoy_sr_cluster_up_cx_incr"
-                  ],
-                  "metricTypes": [
-                    "readMetricsValues"
                   ]
                 },
                 {
@@ -925,11 +866,8 @@
                     "showXAxis": true,
                     "showYAxis": true
                   },
-                  "metrics": [
+                  "expressions": [
                     "envoy_sr_cluster_up_rq_incr"
-                  ],
-                  "metricTypes": [
-                    "readMetricsValues"
                   ]
                 }
               ]

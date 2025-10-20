@@ -30,6 +30,9 @@ import org.apache.skywalking.oap.server.core.storage.management.UIMenuManagement
 import org.apache.skywalking.oap.server.core.storage.management.UITemplateManagementDAO;
 import org.apache.skywalking.oap.server.core.storage.model.ModelCreator;
 import org.apache.skywalking.oap.server.core.storage.model.ModelInstaller;
+import org.apache.skywalking.oap.server.core.storage.profiling.asyncprofiler.IAsyncProfilerTaskLogQueryDAO;
+import org.apache.skywalking.oap.server.core.storage.profiling.asyncprofiler.IAsyncProfilerTaskQueryDAO;
+import org.apache.skywalking.oap.server.core.storage.profiling.asyncprofiler.IJFRDataQueryDAO;
 import org.apache.skywalking.oap.server.core.storage.profiling.continuous.IContinuousProfilingPolicyDAO;
 import org.apache.skywalking.oap.server.core.storage.profiling.ebpf.IEBPFProfilingDataDAO;
 import org.apache.skywalking.oap.server.core.storage.profiling.ebpf.IEBPFProfilingScheduleDAO;
@@ -42,6 +45,7 @@ import org.apache.skywalking.oap.server.core.storage.query.IAggregationQueryDAO;
 import org.apache.skywalking.oap.server.core.storage.query.IAlarmQueryDAO;
 import org.apache.skywalking.oap.server.core.storage.query.IBrowserLogQueryDAO;
 import org.apache.skywalking.oap.server.core.storage.query.IEventQueryDAO;
+import org.apache.skywalking.oap.server.core.storage.query.IHierarchyQueryDAO;
 import org.apache.skywalking.oap.server.core.storage.query.ILogQueryDAO;
 import org.apache.skywalking.oap.server.core.storage.query.IMetadataQueryDAO;
 import org.apache.skywalking.oap.server.core.storage.query.IMetricsQueryDAO;
@@ -51,6 +55,8 @@ import org.apache.skywalking.oap.server.core.storage.query.ITagAutoCompleteQuery
 import org.apache.skywalking.oap.server.core.storage.query.ITopologyQueryDAO;
 import org.apache.skywalking.oap.server.core.storage.query.ITraceQueryDAO;
 import org.apache.skywalking.oap.server.core.storage.query.IZipkinQueryDAO;
+import org.apache.skywalking.oap.server.core.storage.ttl.DefaultStorageTTLStatusQuery;
+import org.apache.skywalking.oap.server.core.storage.ttl.StorageTTLStatusQuery;
 import org.apache.skywalking.oap.server.library.client.jdbc.hikaricp.JDBCClient;
 import org.apache.skywalking.oap.server.library.module.ModuleDefine;
 import org.apache.skywalking.oap.server.library.module.ModuleProvider;
@@ -58,6 +64,8 @@ import org.apache.skywalking.oap.server.library.module.ModuleStartException;
 import org.apache.skywalking.oap.server.library.module.ServiceNotProvidedException;
 import org.apache.skywalking.oap.server.storage.plugin.jdbc.common.dao.JDBCAggregationQueryDAO;
 import org.apache.skywalking.oap.server.storage.plugin.jdbc.common.dao.JDBCAlarmQueryDAO;
+import org.apache.skywalking.oap.server.storage.plugin.jdbc.common.dao.JDBCAsyncProfilerTaskLogQueryDAO;
+import org.apache.skywalking.oap.server.storage.plugin.jdbc.common.dao.JDBCAsyncProfilerTaskQueryDAO;
 import org.apache.skywalking.oap.server.storage.plugin.jdbc.common.dao.JDBCBatchDAO;
 import org.apache.skywalking.oap.server.storage.plugin.jdbc.common.dao.JDBCBrowserLogQueryDAO;
 import org.apache.skywalking.oap.server.storage.plugin.jdbc.common.dao.JDBCContinuousProfilingPolicyDAO;
@@ -65,7 +73,9 @@ import org.apache.skywalking.oap.server.storage.plugin.jdbc.common.dao.JDBCEBPFP
 import org.apache.skywalking.oap.server.storage.plugin.jdbc.common.dao.JDBCEBPFProfilingScheduleDAO;
 import org.apache.skywalking.oap.server.storage.plugin.jdbc.common.dao.JDBCEBPFProfilingTaskDAO;
 import org.apache.skywalking.oap.server.storage.plugin.jdbc.common.dao.JDBCEventQueryDAO;
+import org.apache.skywalking.oap.server.storage.plugin.jdbc.common.dao.JDBCHierarchyQueryDAO;
 import org.apache.skywalking.oap.server.storage.plugin.jdbc.common.dao.JDBCHistoryDeleteDAO;
+import org.apache.skywalking.oap.server.storage.plugin.jdbc.common.dao.JDBCJFRDataQueryDAO;
 import org.apache.skywalking.oap.server.storage.plugin.jdbc.common.dao.JDBCLogQueryDAO;
 import org.apache.skywalking.oap.server.storage.plugin.jdbc.common.dao.JDBCMetadataQueryDAO;
 import org.apache.skywalking.oap.server.storage.plugin.jdbc.common.dao.JDBCMetricsQueryDAO;
@@ -199,28 +209,56 @@ public abstract class JDBCStorageProvider extends ModuleProvider {
 
         this.registerServiceImplementation(
             IEBPFProfilingTaskDAO.class,
-            new JDBCEBPFProfilingTaskDAO(jdbcClient, tableHelper));
+            new JDBCEBPFProfilingTaskDAO(jdbcClient, tableHelper)
+        );
         this.registerServiceImplementation(
             IEBPFProfilingScheduleDAO.class,
-            new JDBCEBPFProfilingScheduleDAO(jdbcClient, tableHelper));
+            new JDBCEBPFProfilingScheduleDAO(jdbcClient, tableHelper)
+        );
         this.registerServiceImplementation(
             IEBPFProfilingDataDAO.class,
-            new JDBCEBPFProfilingDataDAO(jdbcClient, tableHelper));
+            new JDBCEBPFProfilingDataDAO(jdbcClient, tableHelper)
+        );
         this.registerServiceImplementation(
             IContinuousProfilingPolicyDAO.class,
-            new JDBCContinuousProfilingPolicyDAO(jdbcClient, tableHelper));
+            new JDBCContinuousProfilingPolicyDAO(jdbcClient, tableHelper)
+        );
         this.registerServiceImplementation(
             IServiceLabelDAO.class,
-            new JDBCServiceLabelQueryDAO(jdbcClient, tableHelper));
+            new JDBCServiceLabelQueryDAO(jdbcClient, tableHelper)
+        );
         this.registerServiceImplementation(
             ITagAutoCompleteQueryDAO.class,
-            new JDBCTagAutoCompleteQueryDAO(jdbcClient, tableHelper));
+            new JDBCTagAutoCompleteQueryDAO(jdbcClient, tableHelper)
+        );
         this.registerServiceImplementation(
             IZipkinQueryDAO.class,
-            new JDBCZipkinQueryDAO(jdbcClient, tableHelper));
+            new JDBCZipkinQueryDAO(jdbcClient, tableHelper)
+        );
         this.registerServiceImplementation(
             ISpanAttachedEventQueryDAO.class,
-            new JDBCSpanAttachedEventQueryDAO(jdbcClient, tableHelper));
+            new JDBCSpanAttachedEventQueryDAO(jdbcClient, tableHelper)
+        );
+        this.registerServiceImplementation(
+            IHierarchyQueryDAO.class,
+            new JDBCHierarchyQueryDAO(jdbcClient, config.getMetadataQueryMaxSize(), tableHelper)
+        );
+        this.registerServiceImplementation(
+            IAsyncProfilerTaskQueryDAO.class,
+            new JDBCAsyncProfilerTaskQueryDAO(jdbcClient, tableHelper)
+        );
+        this.registerServiceImplementation(
+            IAsyncProfilerTaskLogQueryDAO.class,
+            new JDBCAsyncProfilerTaskLogQueryDAO(jdbcClient, tableHelper)
+        );
+        this.registerServiceImplementation(
+            IJFRDataQueryDAO.class,
+            new JDBCJFRDataQueryDAO(jdbcClient, tableHelper)
+        );
+        this.registerServiceImplementation(
+            StorageTTLStatusQuery.class,
+            new DefaultStorageTTLStatusQuery()
+        );
     }
 
     @Override

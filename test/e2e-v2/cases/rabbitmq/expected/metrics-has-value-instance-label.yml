@@ -13,21 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+debuggingtrace: null
 type: TIME_SERIES_VALUES
 results:
   {{- contains .results }}
   - metric:
       labels:
-      - key: _
+      - key: alloc
         value: std_alloc
     values:
       {{- contains .values }}
       - id: {{ notEmpty .id }}
         value: {{ .value }}
         traceid: null
+        owner: null
       - id: {{ notEmpty .id }}
         value: null
         traceid: null
+        owner: null
       {{- end}}
   {{- end}}
 error: null

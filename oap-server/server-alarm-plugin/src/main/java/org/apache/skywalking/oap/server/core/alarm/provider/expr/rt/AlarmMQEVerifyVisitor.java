@@ -19,15 +19,20 @@
 package org.apache.skywalking.oap.server.core.alarm.provider.expr.rt;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.skywalking.mqe.rt.MQEVisitorBase;
 import org.apache.skywalking.mqe.rt.grammar.MQEParser;
-import org.apache.skywalking.mqe.rt.type.ExpressionResult;
-import org.apache.skywalking.mqe.rt.type.ExpressionResultType;
-import org.apache.skywalking.mqe.rt.type.MQEValue;
-import org.apache.skywalking.mqe.rt.type.MQEValues;
+import org.apache.skywalking.oap.server.core.query.mqe.ExpressionResult;
+import org.apache.skywalking.oap.server.core.query.mqe.ExpressionResultType;
+import org.apache.skywalking.oap.server.core.query.mqe.MQEValue;
+import org.apache.skywalking.oap.server.core.query.mqe.MQEValues;
+import org.apache.skywalking.oap.server.core.query.enumeration.Step;
+import org.apache.skywalking.oap.server.core.storage.annotation.Column;
+import org.apache.skywalking.oap.server.core.storage.annotation.ValueColumnMetadata;
+import org.apache.skywalking.oap.server.library.module.ModuleManager;
 
 /**
  * Used for verify the alarm expression and get the metrics name when read the alarm rules.
@@ -36,11 +41,24 @@ import org.apache.skywalking.mqe.rt.type.MQEValues;
 @Slf4j
 public class AlarmMQEVerifyVisitor extends MQEVisitorBase {
     private final Set<String> includeMetrics = new HashSet<>();
+    private int maxTrendRange = 0;
+
+    public AlarmMQEVerifyVisitor(final ModuleManager moduleManager) {
+        super(moduleManager, Step.MINUTE);
+    }
 
     @Override
     public ExpressionResult visitMetric(MQEParser.MetricContext ctx) {
         ExpressionResult result = new ExpressionResult();
         String metricName = ctx.metricName().getText();
+        Optional<ValueColumnMetadata.ValueColumn> valueColumn = ValueColumnMetadata.INSTANCE.readValueColumnDefinition(
+            metricName);
+        if (valueColumn.isEmpty()) {
+            result.setType(ExpressionResultType.UNKNOWN);
+            result.setError("Metric: [" + metricName + "] does not exist.");
+            return result;
+        }
+
         this.includeMetrics.add(metricName);
 
         if (ctx.parent instanceof MQEParser.TopNOPContext) {
@@ -48,13 +66,42 @@ public class AlarmMQEVerifyVisitor extends MQEVisitorBase {
             result.setError("Unsupported operation: [top_n] in alarm expression.");
             return result;
         }
+        Column.ValueDataType dataType = valueColumn.get().getDataType();
 
-        MQEValues mqeValues = new MQEValues();
+        MQEValues mockMqeValues = new MQEValues();
         MQEValue mqeValue = new MQEValue();
         mqeValue.setEmptyValue(true);
-        mqeValues.getValues().add(mqeValue);
-        result.getResults().add(mqeValues);
+        mockMqeValues.getValues().add(mqeValue);
+        result.getResults().add(mockMqeValues);
         result.setType(ExpressionResultType.TIME_SERIES_VALUES);
-        return result;
+        if (dataType == Column.ValueDataType.COMMON_VALUE) {
+            return result;
+        } else if (dataType == Column.ValueDataType.LABELED_VALUE) {
+            result.setLabeledResult(true);
+            return result;
+        } else {
+            result.setType(ExpressionResultType.UNKNOWN);
+            result.setError("Metric does not supported in alarm, metric: [" + metricName + "] is not a common or labeled metric.");
+            return result;
+        }
+    }
+
+    @Override
+    public ExpressionResult visitTrendOP(MQEParser.TrendOPContext ctx) {
+        int trendRange = Integer.parseInt(ctx.INTEGER().getText());
+        if (trendRange < 1) {
+            ExpressionResult result = new ExpressionResult();
+            result.setType(ExpressionResultType.UNKNOWN);
+            result.setError("The trend range must be greater than 0.");
+            return result;
+        }
+        setMaxTrendRange(trendRange);
+        return super.visitTrendOP(ctx);
+    }
+
+    private void setMaxTrendRange(int trendRange) {
+        if (trendRange > maxTrendRange) {
+            maxTrendRange = trendRange;
+        }
     }
 }

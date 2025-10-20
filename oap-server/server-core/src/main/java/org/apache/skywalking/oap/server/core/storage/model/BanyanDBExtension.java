@@ -30,22 +30,14 @@ import org.apache.skywalking.oap.server.core.storage.annotation.BanyanDB;
 @RequiredArgsConstructor
 public class BanyanDBExtension {
     /**
-     * Sharding key is used to group time series data per metric of one entity. See {@link
+     * SeriesID is used to group time series data per metric of one entity. See {@link
      * BanyanDB.SeriesID#index()}.
      *
      * @since 9.1.0 moved into BanyanDBExtension
      * @since 9.0.0 added into {@link ModelColumn}
      */
     @Getter
-    private final int shardingKeyIdx;
-
-    /**
-     * Global index column.
-     *
-     * @since 9.1.0
-     */
-    @Getter
-    private final boolean isGlobalIndexing;
+    private final int seriesIDIdx;
 
     /**
      * {@link BanyanDB.NoIndexing} exists to override {@link ModelColumn#shouldIndex()}, or be the same as {@link
@@ -59,21 +51,35 @@ public class BanyanDBExtension {
      * indexType is the type of index built for a {@link ModelColumn} in BanyanDB.
      *
      * @since 9.3.0
+     * @deprecated since 10.2. Only support {@link BanyanDB.IndexRule.IndexType#INVERTED} now. There was IndexType#TREE,
+     * but removed.
      */
-    @Getter
     private final BanyanDB.IndexRule.IndexType indexType;
 
     /**
-     *  A column belong to a measure's field.
+     * A column belong to a measure's field.
      */
     @Getter
     private final boolean isMeasureField;
 
     /**
-     * @return true if this column is a part of sharding key
+     * The analyzer policy appointed to fuzzy query, especially for BanyanDB.
+     * See {@link BanyanDB.MatchQuery}.
      */
-    public boolean isShardingKey() {
-        return this.shardingKeyIdx > -1;
+    @Getter
+    private final BanyanDB.MatchQuery.AnalyzerType analyzer;
+
+    /**
+     * Enable sort for this column. See {@link BanyanDB.EnableSort}.
+     */
+    @Getter
+    private final boolean enableSort;
+
+    /**
+     * @return true if this column is a part of SeriesID
+     */
+    public boolean isSeriesID() {
+        return this.seriesIDIdx > -1;
     }
 
     /**

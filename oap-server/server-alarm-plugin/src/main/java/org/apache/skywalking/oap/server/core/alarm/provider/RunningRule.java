@@ -18,8 +18,8 @@
 
 package org.apache.skywalking.oap.server.core.alarm.provider;
 
+import com.google.gson.JsonObject;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -29,8 +29,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -40,10 +42,12 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.apache.skywalking.mqe.rt.exception.ParseErrorListener;
 import org.apache.skywalking.mqe.rt.grammar.MQELexer;
 import org.apache.skywalking.mqe.rt.grammar.MQEParser;
-import org.apache.skywalking.mqe.rt.type.ExpressionResult;
-import org.apache.skywalking.mqe.rt.type.ExpressionResultType;
-import org.apache.skywalking.mqe.rt.type.MQEValues;
+import org.apache.skywalking.oap.server.core.query.mqe.ExpressionResult;
+import org.apache.skywalking.oap.server.core.query.mqe.ExpressionResultType;
+import org.apache.skywalking.oap.server.core.query.mqe.MQEValues;
 import org.apache.skywalking.oap.server.core.alarm.provider.expr.rt.AlarmMQEVisitor;
+import org.apache.skywalking.oap.server.core.query.type.debugging.DebuggingTraceContext;
+import org.apache.skywalking.oap.server.library.module.ModuleManager;
 import org.apache.skywalking.oap.server.library.util.StringUtil;
 import org.apache.skywalking.oap.server.core.alarm.AlarmMessage;
 import org.apache.skywalking.oap.server.core.alarm.MetaInAlarm;
@@ -54,17 +58,19 @@ import org.apache.skywalking.oap.server.core.analysis.metrics.IntValueHolder;
 import org.apache.skywalking.oap.server.core.analysis.metrics.LabeledValueHolder;
 import org.apache.skywalking.oap.server.core.analysis.metrics.LongValueHolder;
 import org.apache.skywalking.oap.server.core.analysis.metrics.Metrics;
-import org.apache.skywalking.oap.server.core.analysis.metrics.MultiIntValuesHolder;
 import org.apache.skywalking.oap.server.library.util.CollectionUtils;
 import org.joda.time.LocalDateTime;
 import org.joda.time.Minutes;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import static org.apache.skywalking.oap.server.core.query.type.debugging.DebuggingTraceContext.TRACE_CONTEXT;
+
 /**
  * RunningRule represents each rule in running status. Based on the {@link AlarmRule} definition,
  */
 @Slf4j
+@Getter
 public class RunningRule {
     private static DateTimeFormatter TIME_BUCKET_FORMATTER = DateTimeFormat.forPattern("yyyyMMddHHmm");
 
@@ -82,8 +88,11 @@ public class RunningRule {
     private final Set<String> hooks;
     private final Set<String> includeMetrics;
     private final ParseTree exprTree;
+    // The additional period is used to calculate the trend.
+    private final int additionalPeriod;
+    private final ModuleManager moduleManager;
 
-    public RunningRule(AlarmRule alarmRule) {
+    public RunningRule(AlarmRule alarmRule, ModuleManager moduleManager) {
         expression = alarmRule.getExpression();
         this.ruleName = alarmRule.getAlarmRuleName();
         this.includeMetrics = alarmRule.getIncludeMetrics();
@@ -108,6 +117,8 @@ public class RunningRule {
         MQEParser parser = new MQEParser(new CommonTokenStream(lexer));
         parser.addErrorListener(new ParseErrorListener());
         this.exprTree = parser.expression();
+        this.additionalPeriod = alarmRule.getMaxTrendRange();
+        this.moduleManager = moduleManager;
     }
 
     /**
@@ -134,7 +145,7 @@ public class RunningRule {
         AlarmEntity entity = new AlarmEntity(
             meta.getScope(), meta.getScopeId(), meta.getName(), meta.getId0(), meta.getId1());
 
-        Window window = windows.computeIfAbsent(entity, ignored -> new Window(period));
+        Window window = windows.computeIfAbsent(entity, ignored -> new Window(entity, this.period, this.additionalPeriod));
         window.add(meta.getMetricsName(), metrics);
     }
 
@@ -198,8 +209,14 @@ public class RunningRule {
      */
     public List<AlarmMessage> check() {
         List<AlarmMessage> alarmMessageList = new ArrayList<>(30);
+        List<AlarmEntity> expiredEntityList = new ArrayList<>();
 
         windows.forEach((alarmEntity, window) -> {
+            if (window.isExpired()) {
+                expiredEntityList.add(alarmEntity);
+                return;
+            }
+
             Optional<AlarmMessage> alarmMessageOptional = window.checkAlarm();
             if (alarmMessageOptional.isPresent()) {
                 AlarmMessage alarmMessage = alarmMessageOptional.get();
@@ -214,10 +231,13 @@ public class RunningRule {
                 alarmMessage.setPeriod(this.period);
                 alarmMessage.setTags(this.tags);
                 alarmMessage.setHooks(this.hooks);
+                alarmMessage.setExpression(expression);
+                alarmMessage.setMqeMetricsSnapshot(window.mqeMetricsSnapshot);
                 alarmMessageList.add(alarmMessage);
             }
         });
 
+        expiredEntityList.forEach(windows::remove);
         return alarmMessageList;
     }
 
@@ -226,14 +246,24 @@ public class RunningRule {
      * buckets.
      */
     public class Window {
+        @Getter
         private LocalDateTime endTime;
-        private final int period;
+        @Getter
+        private final int additionalPeriod;
+        @Getter
+        private final int size;
+        @Getter
         private int silenceCountdown;
         private LinkedList<Map<String, Metrics>> values;
         private ReentrantLock lock = new ReentrantLock();
+        @Getter
+        private JsonObject mqeMetricsSnapshot;
+        private AlarmEntity entity;
 
-        public Window(int period) {
-            this.period = period;
+        public Window(AlarmEntity entity, int period, int additionalPeriod) {
+            this.entity = entity;
+            this.additionalPeriod = additionalPeriod;
+            this.size = period + additionalPeriod;
             // -1 means silence countdown is not running.
             silenceCountdown = -1;
             init();
@@ -334,58 +364,86 @@ public class RunningRule {
         }
 
         private boolean isMatch() {
+            this.lock.lock();
             int isMatch = 0;
-            AlarmMQEVisitor visitor = new AlarmMQEVisitor(this.values, this.endTime);
-            ExpressionResult parseResult = visitor.visit(exprTree);
-            if (StringUtil.isNotBlank(parseResult.getError())) {
-                log.error("expression:" + expression + " error: " + parseResult.getError());
-                return false;
-            }
-            if (!parseResult.isBoolResult() ||
-                ExpressionResultType.SINGLE_VALUE != parseResult.getType() ||
-                CollectionUtils.isEmpty(parseResult.getResults())) {
-                return false;
-            }
-            if (!parseResult.isLabeledResult()) {
-                MQEValues mqeValues = parseResult.getResults().get(0);
-                if (mqeValues != null &&
-                    CollectionUtils.isNotEmpty(mqeValues.getValues()) &&
-                    mqeValues.getValues().get(0) != null) {
-                    isMatch = (int) mqeValues.getValues().get(0).getDoubleValue();
+            try {
+                TRACE_CONTEXT.set(new DebuggingTraceContext(expression, false, false));
+                AlarmMQEVisitor visitor = new AlarmMQEVisitor(moduleManager, this.entity, this.values, this.endTime, this.additionalPeriod);
+                ExpressionResult parseResult = visitor.visit(exprTree);
+                if (StringUtil.isNotBlank(parseResult.getError())) {
+                    log.error("expression:" + expression + " error: " + parseResult.getError());
+                    return false;
                 }
-            } else {
-                // if the result has multiple labels, when there is one label match, then the result is match
-                // for example in 5 minutes, the sum(percentile{_='P50,P75'} > 1000) >= 3
-                // percentile{_='P50,P75'} result is:
-                // P50(1000,1100,1200,1000,500), > 1000 2 times
-                // P75(2000,1500,1200,1000,500), > 1000 3 times
-                // percentile{_='P50,P75'} > 1000 result is:
-                // P50(0,1,1,0,0)
-                // P75(1,1,1,0,0)
-                // sum(percentile{_='P50,P75'} > 1000) >= 3 result is:
-                // P50(0)
-                // P75(1)
-                // then the isMatch is 1
-                for (MQEValues mqeValues : parseResult.getResults()) {
+                if (!parseResult.isBoolResult() ||
+                    ExpressionResultType.SINGLE_VALUE != parseResult.getType() ||
+                    CollectionUtils.isEmpty(parseResult.getResults())) {
+                    return false;
+                }
+                if (!parseResult.isLabeledResult()) {
+                    MQEValues mqeValues = parseResult.getResults().get(0);
                     if (mqeValues != null &&
                         CollectionUtils.isNotEmpty(mqeValues.getValues()) &&
                         mqeValues.getValues().get(0) != null) {
                         isMatch = (int) mqeValues.getValues().get(0).getDoubleValue();
-                        if (isMatch == 1) {
-                            break;
+                    }
+                } else {
+                    // if the result has multiple labels, when there is one label match, then the result is match
+                    // for example in 5 minutes, the sum(percentile{p='50,75'} > 1000) >= 3
+                    // percentile{p='50,75'} result is:
+                    // P50(1000,1100,1200,1000,500), > 1000 2 times
+                    // P75(2000,1500,1200,1000,500), > 1000 3 times
+                    // percentile{p='50,75'} > 1000 result is:
+                    // P50(0,1,1,0,0)
+                    // P75(1,1,1,0,0)
+                    // sum(percentile{p='50,75'} > 1000) >= 3 result is:
+                    // P50(0)
+                    // P75(1)
+                    // then the isMatch is 1
+                    for (MQEValues mqeValues : parseResult.getResults()) {
+                        if (mqeValues != null &&
+                            CollectionUtils.isNotEmpty(mqeValues.getValues()) &&
+                            mqeValues.getValues().get(0) != null) {
+                            isMatch = (int) mqeValues.getValues().get(0).getDoubleValue();
+                            if (isMatch == 1) {
+                                break;
+                            }
                         }
                     }
                 }
+                if (log.isTraceEnabled()) {
+                    log.trace("Match expression is {}", expression);
+                }
+                this.mqeMetricsSnapshot = visitor.getMqeMetricsSnapshot();
+                return isMatch == 1;
+            } finally {
+                this.lock.unlock();
+                TRACE_CONTEXT.remove();
             }
-            if (log.isTraceEnabled()) {
-                log.trace("Match expression is {}", expression);
+        }
+
+        public boolean isExpired() {
+            if (this.values != null) {
+                for (Map<String, Metrics> value : this.values) {
+                    if (value != null) {
+                        return false;
+                    }
+                }
             }
-            return isMatch == 1;
+            return true;
+        }
+
+        public void scanWindowValues(Consumer<LinkedList<Map<String, Metrics>>> scanFunction) {
+            lock.lock();
+            try {
+                scanFunction.accept(values);
+            } finally {
+                lock.unlock();
+            }
         }
 
         private void init() {
             values = new LinkedList<>();
-            for (int i = 0; i < period; i++) {
+            for (int i = 0; i < size; i++) {
                 values.add(null);
             }
         }
@@ -407,9 +465,6 @@ public class RunningRule {
                     r.put(name, new TraceLogMetric(m.getTimeBucket(), new Number[] {((IntValueHolder) m).getValue()}));
                 } else if (m instanceof DoubleValueHolder) {
                     r.put(name, new TraceLogMetric(m.getTimeBucket(), new Number[] {((DoubleValueHolder) m).getValue()}));
-                } else if (m instanceof MultiIntValuesHolder) {
-                    int[] iArr = ((MultiIntValuesHolder) m).getValues();
-                    r.put(name, new TraceLogMetric(m.getTimeBucket(), Arrays.stream(iArr).boxed().toArray(Number[]::new)));
                 } else if (m instanceof LabeledValueHolder) {
                     DataTable dt = ((LabeledValueHolder) m).getValue();
                     TraceLogMetric l = new TraceLogMetric(

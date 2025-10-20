@@ -64,7 +64,6 @@ public class BanyanDBMetricsDAO extends AbstractBanyanDBDAO implements IMetricsD
 
     @Override
     public List<Metrics> multiGet(Model model, List<Metrics> metrics) throws IOException {
-        log.info("multiGet {} from BanyanDB", model.getName());
         MetadataRegistry.Schema schema = MetadataRegistry.INSTANCE.findMetadata(model);
         if (schema == null) {
             throw new IOException(model.getName() + " is not registered");
@@ -78,7 +77,7 @@ public class BanyanDBMetricsDAO extends AbstractBanyanDBDAO implements IMetricsD
                 if (ext == null) {
                     return;
                 }
-                if (ext.isShardingKey()) {
+                if (ext.isSeriesID()) {
                     seriesIDColumns.put(c.getColumnName().getName(), new ArrayList<>());
                 }
             });
@@ -126,7 +125,7 @@ public class BanyanDBMetricsDAO extends AbstractBanyanDBDAO implements IMetricsD
         }
 
         List<Metrics> metricsInStorage = new ArrayList<>(metrics.size());
-        MeasureQueryResponse resp = query(model.getName(), schema.getTags(), schema.getFields(), timestampRange, new QueryBuilder<MeasureQuery>() {
+        MeasureQueryResponse resp = query(schema, schema.getTags(), schema.getFields(), timestampRange, new QueryBuilder<MeasureQuery>() {
                 @Override
             protected void apply(MeasureQuery query) {
                 seriesIDColumns.entrySet().forEach(entry -> {
@@ -148,7 +147,6 @@ public class BanyanDBMetricsDAO extends AbstractBanyanDBDAO implements IMetricsD
 
     @Override
     public InsertRequest prepareBatchInsert(Model model, Metrics metrics, SessionCacheCallback callback) throws IOException {
-        log.info("prepare to insert {}", model.getName());
         MetadataRegistry.Schema schema = MetadataRegistry.INSTANCE.findMetadata(model);
         if (schema == null) {
             throw new IOException(model.getName() + " is not registered");
@@ -166,7 +164,6 @@ public class BanyanDBMetricsDAO extends AbstractBanyanDBDAO implements IMetricsD
 
     @Override
     public UpdateRequest prepareBatchUpdate(Model model, Metrics metrics, SessionCacheCallback callback) throws IOException {
-        log.info("prepare to update {}", model.getName());
         MetadataRegistry.Schema schema = MetadataRegistry.INSTANCE.findMetadata(model);
         if (schema == null) {
             throw new IOException(model.getName() + " is not registered");

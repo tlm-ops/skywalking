@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.DoubleBinaryOperator;
 import java.util.function.Function;
@@ -242,6 +243,59 @@ public class SampleFamily {
         );
     }
 
+    public SampleFamily count(List<String> by) {
+        ExpressionParsingContext.get().ifPresent(ctx -> ctx.aggregationLabels.addAll(by));
+        if (this == EMPTY) {
+            return EMPTY;
+        }
+        if (by == null) {
+            long result = Arrays.stream(samples).count();
+            return SampleFamily.build(
+                    this.context, InternalOps.newSample(samples[0].name, ImmutableMap.of(), samples[0].timestamp, result));
+        }
+
+        if (by.size() == 1) {
+            Set<String> set = Arrays
+                    .stream(samples)
+                    .map(sample -> sample.labels.get(by.get(0)))
+                    .filter(StringUtils::isNotBlank)
+                    .collect(Collectors.toSet());
+
+            return SampleFamily.build(
+                    this.context, InternalOps.newSample(samples[0].name, ImmutableMap.of(), samples[0].timestamp, set.size()));
+        }
+
+        Stream<Map.Entry<ImmutableMap<String, String>, List<Sample>>> stream = Arrays
+                .stream(samples)
+                .filter(sample -> sample.labels.keySet().containsAll(by))
+                .collect(groupingBy(it -> InternalOps.getLabels(by, it)))
+                .entrySet()
+                .stream()
+                .map(entry -> InternalOps.newSample(
+                        entry.getValue().get(0).getName(),
+                        entry.getKey(),
+                        entry.getValue().get(0).getTimestamp(),
+                        entry.getValue().size()))
+                .collect(groupingBy(it -> InternalOps.groupByExcludedLabel(by.get(by.size() - 1), it), mapping(identity(), toList())))
+                .entrySet()
+                .stream();
+
+        Sample[] array = stream
+                .map(entry -> InternalOps.newSample(
+                        entry.getValue().get(0).getName(),
+                        entry.getKey(),
+                        entry.getValue().get(0).getTimestamp(),
+                        entry.getValue().size()
+                ))
+                .toArray(Sample[]::new);
+
+        SampleFamily sampleFamily = SampleFamily.build(
+                this.context,
+                array
+        );
+        return sampleFamily;
+    }
+
     protected SampleFamily aggregate(List<String> by, DoubleBinaryOperator aggregator) {
         ExpressionParsingContext.get().ifPresent(ctx -> ctx.aggregationLabels.addAll(by));
         if (this == EMPTY) {
@@ -276,7 +330,11 @@ public class SampleFamily {
         return SampleFamily.build(
             this.context,
             Arrays.stream(samples)
-                  .map(sample -> sample.increase(range, (lowerBoundValue, unused) -> sample.value - lowerBoundValue))
+                  .map(sample -> sample.increase(
+                      range,
+                      context.metricName,
+                      (lowerBoundValue, unused) -> sample.value - lowerBoundValue
+                  ))
                   .toArray(Sample[]::new)
         );
     }
@@ -291,6 +349,7 @@ public class SampleFamily {
             Arrays.stream(samples)
                   .map(sample -> sample.increase(
                       range,
+                      context.metricName,
                       (lowerBoundValue, lowerBoundTime) -> {
                           final long timeDiff = (sample.timestamp - lowerBoundTime) / 1000;
                           return timeDiff < 1L ? 0.0 : (sample.value - lowerBoundValue) / timeDiff;
@@ -308,6 +367,7 @@ public class SampleFamily {
             this.context,
             Arrays.stream(samples)
                   .map(sample -> sample.increase(
+                      context.metricName,
                       (lowerBoundValue, lowerBoundTime) -> {
                           final long timeDiff = (sample.timestamp - lowerBoundTime) / 1000;
                           return timeDiff < 1L ? 0.0 : (sample.value - lowerBoundValue) / timeDiff;
@@ -634,10 +694,37 @@ public class SampleFamily {
     }
 
     /**
+     * Decorate the service meter entity with the given closure.
+     */
+    public SampleFamily decorate(Closure<Void> c) {
+        ExpressionParsingContext.get().ifPresent(ctx -> {
+            if (ctx.getScopeType() != ScopeType.SERVICE) {
+                throw new IllegalStateException("decorate() should be invoked after service()");
+            }
+            if (ctx.isHistogram()) {
+                throw new IllegalStateException("decorate() not supported for histogram metrics");
+            }
+            if (!ctx.getLabels().isEmpty()) {
+                throw new IllegalStateException("decorate() not supported for labeled metrics");
+            }
+        });
+        if (this == EMPTY) {
+            return EMPTY;
+        }
+        this.context.getMeterSamples().keySet().forEach(meterEntity -> {
+            // Only service meter entity can be decorated
+            if (meterEntity.getScopeType().equals(ScopeType.SERVICE)) {
+                c.call(meterEntity);
+            }
+        });
+        return this;
+    }
+
+    /**
      * The parsing context holds key results more than sample collection.
      */
     @ToString
-    @EqualsAndHashCode
+    @EqualsAndHashCode(exclude = "metricName")
     @Getter
     @Setter
     @Builder
@@ -650,6 +737,8 @@ public class SampleFamily {
                                  .defaultHistogramBucketUnit(TimeUnit.SECONDS)
                                  .build();
         }
+
+        private String metricName;
 
         @Builder.Default
         private Map<MeterEntity, Sample[]> meterSamples = new HashMap<>();
@@ -792,6 +881,15 @@ public class SampleFamily {
                                 Function.identity(),
                                 labelKey -> sample.labels.getOrDefault(labelKey, "")
                             ));
+        }
+
+        private static ImmutableMap<String, String> groupByExcludedLabel(final String excludedLabelKey, final Sample sample) {
+            return sample
+                    .labels
+                    .entrySet()
+                    .stream()
+                    .filter(v -> !v.getKey().equals(excludedLabelKey))
+                    .collect(toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
         }
     }
 

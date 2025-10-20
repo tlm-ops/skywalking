@@ -69,7 +69,7 @@ public class RecordsQueryEsDAO extends EsDAO implements IRecordsQueryDAO {
                       condition.getOrder().equals(Order.DES) ?
                           Sort.Order.DESC : Sort.Order.ASC
                   );
-        final SearchResponse response = getClient().search(
+        final SearchResponse response = searchDebuggable(
             IndexController.LogicIndicesRegister.getPhysicalTableName(condition.getName()),
             search.build()
         );

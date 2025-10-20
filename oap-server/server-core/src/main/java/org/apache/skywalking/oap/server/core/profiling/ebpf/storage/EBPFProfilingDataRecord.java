@@ -18,8 +18,8 @@
 
 package org.apache.skywalking.oap.server.core.profiling.ebpf.storage;
 
+import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
-import com.linecorp.armeria.internal.shaded.guava.base.Charsets;
 import lombok.Data;
 import org.apache.skywalking.oap.server.core.analysis.Stream;
 import org.apache.skywalking.oap.server.core.analysis.record.Record;
@@ -51,8 +51,8 @@ public class EBPFProfilingDataRecord extends Record {
     public static final String UPLOAD_TIME = "upload_time";
 
     @Column(name = TASK_ID)
-    @BanyanDB.SeriesID(index = 0)
     private String taskId;
+    @BanyanDB.SeriesID(index = 0)
     @Column(name = SCHEDULE_ID)
     private String scheduleId;
     @Column(name = STACK_ID_LIST)

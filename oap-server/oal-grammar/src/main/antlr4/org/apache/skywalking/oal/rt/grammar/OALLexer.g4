@@ -52,6 +52,18 @@ SRC_EVENT: 'Event';
 SRC_CACHE_ACCESS: 'CacheAccess';
 SRC_MQ_ACCESS: 'MQAccess';
 SRC_MQ_ENDPOINT_ACCESS: 'MQEndpointAccess';
+SRC_K8S_SERVICE: 'K8SService';
+SRC_K8S_SERVICE_INSTANCE: 'K8SServiceInstance';
+SRC_K8S_ENDPOINT: 'K8SEndpoint';
+SRC_K8S_SERVICE_RELATION: 'K8SServiceRelation';
+SRC_K8S_SERVICE_INSTANCE_RELATION: 'K8SServiceInstanceRelation';
+SRC_CILIUM_SERVICE: 'CiliumService';
+SRC_CILIUM_SERVICE_INSTANCE: 'CiliumServiceInstance';
+SRC_CILIUM_ENDPOINT: 'CiliumEndpoint';
+SRC_CILIUM_SERVICE_RELATION: 'CiliumServiceRelation';
+SRC_CILIUM_SERVICE_INSTANCE_RELATION: 'CiliumServiceInstanceRelation';
+SRC_CILIUM_ENDPOINT_RELATION: 'CiliumEndpointRelation';
+DECORATOR: 'decorator';
 
 
 // Browser keywords
@@ -61,6 +73,9 @@ SRC_BROWSER_APP_SINGLE_VERSION_PERF: 'BrowserAppSingleVersionPerf';
 SRC_BROWSER_APP_TRAFFIC: 'BrowserAppTraffic';
 SRC_BROWSER_APP_PAGE_TRAFFIC: 'BrowserAppPageTraffic';
 SRC_BROWSER_APP_SINGLE_VERSION_TRAFFIC: 'BrowserAppSingleVersionTraffic';
+SRC_BROWSER_APP_RESOURCE_PERF: 'BrowserAppResourcePerf';
+SRC_BROWSER_APP_WEB_VITALS_PERF: 'BrowserAppWebVitalsPerf';
+SRC_BROWSER_APP_WEB_INTERACTION_PERF: 'BrowserAppWebInteractionPerf';
 
 // Constructors symbols
 

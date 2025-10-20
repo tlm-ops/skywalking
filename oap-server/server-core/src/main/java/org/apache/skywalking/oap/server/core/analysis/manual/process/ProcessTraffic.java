@@ -51,6 +51,7 @@ import static org.apache.skywalking.oap.server.core.source.DefaultScopeDefine.PR
     "name",
 })
 @BanyanDB.StoreIDAsTag
+@BanyanDB.IndexMode
 public class ProcessTraffic extends Metrics {
     public static final String INDEX_NAME = "process_traffic";
     public static final String SERVICE_ID = "service_id";
@@ -138,6 +139,12 @@ public class ProcessTraffic extends Metrics {
         }
         if (StringUtil.isNotEmpty(processTraffic.getLabelsJson())) {
             this.labelsJson = processTraffic.getLabelsJson();
+        }
+        /**
+         * Keep the time bucket as the same time inserted.
+         */
+        if (this.getTimeBucket() > metrics.getTimeBucket()) {
+            this.setTimeBucket(metrics.getTimeBucket());
         }
         return true;
     }

@@ -24,6 +24,12 @@ services:
       - "12800:12800"
     networks:
       - e2e
+  banyandb:
+    extends:
+      file: ../../script/docker-compose/base-compose.yml
+      service: banyandb
+    ports:
+      - 17912
   rmq0: &rabbitmq
     image: rabbitmq:3.11.14-management
     networks:
@@ -175,7 +181,7 @@ services:
       METRICS_PROMETHEUS: "true"
 
   otel-collector:
-    image: otel/opentelemetry-collector:0.72.0
+    image: otel/opentelemetry-collector:${OTEL_COLLECTOR_VERSION}
     networks:
       - e2e
     command: [ "--config=/etc/otel-collector-config.yaml" ]

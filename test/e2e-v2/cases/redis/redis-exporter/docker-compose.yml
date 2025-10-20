@@ -27,6 +27,12 @@ services:
     environment:
       - TZ=Asia/Shanghai
       - SW_CORE_TOPN_REPORT_PERIOD=2
+  banyandb:
+    extends:
+      file: ../../../script/docker-compose/base-compose.yml
+      service: banyandb
+    ports:
+      - 17912
   redis_1: &redis
     image: redis:6.0
     networks:
@@ -80,7 +86,7 @@ services:
     environment:
       - REDIS_ADDR=redis_3:6379
   otel-collector:
-    image: otel/opentelemetry-collector:0.50.0
+    image: otel/opentelemetry-collector:${OTEL_COLLECTOR_VERSION}
     networks:
       - e2e
     command: [ "--config=/etc/otel-collector-config.yaml" ]

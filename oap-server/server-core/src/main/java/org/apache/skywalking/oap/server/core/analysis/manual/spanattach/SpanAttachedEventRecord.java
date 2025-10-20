@@ -27,6 +27,7 @@ import org.apache.skywalking.oap.server.core.source.ScopeDeclaration;
 import org.apache.skywalking.oap.server.core.storage.StorageID;
 import org.apache.skywalking.oap.server.core.storage.annotation.BanyanDB;
 import org.apache.skywalking.oap.server.core.storage.annotation.Column;
+import org.apache.skywalking.oap.server.core.storage.annotation.ElasticSearch;
 import org.apache.skywalking.oap.server.core.storage.type.Convert2Entity;
 import org.apache.skywalking.oap.server.core.storage.type.Convert2Storage;
 import org.apache.skywalking.oap.server.core.storage.type.StorageBuilder;
@@ -53,8 +54,10 @@ public class SpanAttachedEventRecord extends Record {
     public static final String DATA_BINARY = "data_binary";
     public static final String TIMESTAMP = "timestamp";
 
+    @ElasticSearch.EnableDocValues
     @Column(name = START_TIME_SECOND)
     private long startTimeSecond;
+    @ElasticSearch.EnableDocValues
     @Column(name = START_TIME_NANOS)
     private int startTimeNanos;
     @Column(name = EVENT)
@@ -67,7 +70,6 @@ public class SpanAttachedEventRecord extends Record {
     @Column(name = TRACE_REF_TYPE)
     private int traceRefType;
     @Column(name = RELATED_TRACE_ID)
-    @BanyanDB.GlobalIndex
     private String relatedTraceId;
     @Column(name = TRACE_SEGMENT_ID)
     private String traceSegmentId;
@@ -77,7 +79,9 @@ public class SpanAttachedEventRecord extends Record {
     private byte[] dataBinary;
     @Setter
     @Getter
+    @ElasticSearch.EnableDocValues
     @Column(name = TIMESTAMP)
+    @BanyanDB.NoIndexing
     private long timestamp;
 
     @Override

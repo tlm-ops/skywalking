@@ -46,6 +46,10 @@ LT:          '<';
 GTE:         '>=';
 GT:          '>';
 
+// Bool operators
+AND:         '&&';
+OR:          '||';
+
 // Aggregation operators
 AVG:         'avg';
 COUNT:       'count';
@@ -59,12 +63,18 @@ ABS:         'abs';
 CEIL:        'ceil';
 FLOOR:       'floor';
 ROUND:       'round';
+INCREASE:    'increase';
+RATE:        'rate';
 
 // TopN
 TOP_N:        'top_n';
+TOP_N_OF:     'top_n_of';
 
 // ViewAsSeq
 VIEW_AS_SEQ: 'view_as_seq';
+
+// IsPresent
+IS_PRESENT: 'is_present';
 
 // Relabels
 RELABELS:     'relabels';
@@ -75,6 +85,23 @@ DES options { caseInsensitive=true; }: 'des';
 
 // AGGREGATE_LABELS
 AGGREGATE_LABELS:   'aggregate_labels';
+
+// Sort
+SORT_VALUES: 'sort_values';
+SORT_LABEL_VALUES: 'sort_label_values';
+
+// Attributes
+ATTR0: 'attr0';
+ATTR1: 'attr1';
+ATTR2: 'attr2';
+ATTR3: 'attr3';
+ATTR4: 'attr4';
+ATTR5: 'attr5';
+
+BASELINE: 'baseline';
+VALUE: 'value';
+UPPER: 'upper';
+LOWER: 'lower';
 
 // Literals
 INTEGER: Digit+;

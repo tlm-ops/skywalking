@@ -22,9 +22,12 @@ import com.linecorp.armeria.common.HttpMethod;
 import graphql.kickstart.tools.SchemaParser;
 import graphql.kickstart.tools.SchemaParserBuilder;
 import graphql.scalars.ExtendedScalars;
+
 import java.util.Collections;
 import org.apache.skywalking.oap.query.graphql.resolver.AggregationQuery;
 import org.apache.skywalking.oap.query.graphql.resolver.AlarmQuery;
+import org.apache.skywalking.oap.query.graphql.resolver.AsyncProfilerMutation;
+import org.apache.skywalking.oap.query.graphql.resolver.AsyncProfilerQuery;
 import org.apache.skywalking.oap.query.graphql.resolver.BrowserLogQuery;
 import org.apache.skywalking.oap.query.graphql.resolver.ContinuousProfilingMutation;
 import org.apache.skywalking.oap.query.graphql.resolver.ContinuousProfilingQuery;
@@ -32,6 +35,7 @@ import org.apache.skywalking.oap.query.graphql.resolver.EBPFProcessProfilingMuta
 import org.apache.skywalking.oap.query.graphql.resolver.EBPFProcessProfilingQuery;
 import org.apache.skywalking.oap.query.graphql.resolver.EventQuery;
 import org.apache.skywalking.oap.query.graphql.resolver.HealthQuery;
+import org.apache.skywalking.oap.query.graphql.resolver.HierarchyQuery;
 import org.apache.skywalking.oap.query.graphql.resolver.LogQuery;
 import org.apache.skywalking.oap.query.graphql.resolver.LogTestQuery;
 import org.apache.skywalking.oap.query.graphql.resolver.MetadataQuery;
@@ -143,7 +147,10 @@ public class GraphQLQueryProvider extends ModuleProvider {
                      .file("query-protocol/continuous-profiling.graphqls")
                      .resolvers(new ContinuousProfilingQuery(getManager()), new ContinuousProfilingMutation(getManager()))
                      .file("query-protocol/record.graphqls")
-                     .resolvers(new RecordsQuery(getManager()));
+                     .resolvers(new RecordsQuery(getManager()))
+                     .file("query-protocol/hierarchy.graphqls").resolvers(new HierarchyQuery(getManager()))
+                .file("query-protocol/async-profiler.graphqls")
+                .resolvers(new AsyncProfilerQuery(getManager()), new AsyncProfilerMutation(getManager()));
 
         if (config.isEnableOnDemandPodLog()) {
             schemaBuilder
@@ -160,7 +167,7 @@ public class GraphQLQueryProvider extends ModuleProvider {
                                                   .provider()
                                                   .getService(HTTPHandlerRegister.class);
         service.addHandler(
-            new GraphQLQueryHandler(config, schemaBuilder.build().makeExecutableSchema()),
+            new GraphQLQueryHandler(getManager(), config, schemaBuilder.build().makeExecutableSchema()),
             Collections.singletonList(HttpMethod.POST)
         );
     }

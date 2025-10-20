@@ -1,3 +1,8 @@
+# Meter System -- Analysis Metrics and Meters
+Meter system is a metric streaming process system, which focus on processing and analyzing aggregated metrics data.
+Metrics from OpenTelemetry, Zabbix, Prometheus, SkyWalking meter APIs, etc., are all statistics, so they are processed
+by the meter system.
+
 # Meter Analysis Language
 
 The meter system provides a functional analysis language called MAL (Meter Analysis Language) that lets users analyze and
@@ -154,6 +159,7 @@ resulting in a new sample family having fewer samples (sometimes having just a s
  - min (select minimum over dimensions)
  - max (select maximum over dimensions)
  - avg (calculate the average over dimensions)
+ - count (calculate the count over dimensions, the last tag will be counted)
 
 These operations can be used to aggregate overall label dimensions or preserve distinct dimensions by inputting `by` parameter( the keyword `by` could be omitted)
 
@@ -173,6 +179,14 @@ will output the following result:
 instance_trace_count{az="az-1"} 133 // 100 + 33
 instance_trace_count{az="az-3"} 20
 ```
+
+___
+**Note, aggregation operations affect the samples from one bulk only. If the metrics are reported parallel from multiple instances/nodes
+through different SampleFamily, this aggregation would NOT work.**
+
+In the best practice for this scenario, build the metric with labels that represent each instance/node. Then use the 
+[AggregateLabels Operation in MQE](../api/metrics-query-expression.md#aggregatelabels-operation) to aggregate the metrics.
+___
 
 ### Function
 
@@ -205,6 +219,10 @@ Examples:
 `histogram(le: '<the tag name of le>')`: Transforms less-based histogram buckets to meter system histogram buckets.
 `le` parameter represents the tag name of the bucket.
 
+**Note** In SkyWalking, the histogram buckets are based on time and will be transformed to the `milliseconds-based`
+histogram buckets in the meter system. (If the metrics from the Prometheus are based on the `seconds-based` histogram
+buckets, will multiply the bucket value by 1000.)
+
 #### histogram_percentile
 `histogram_percentile([<p scalar>])`: Represents the meter-system to calculate the p-percentile (0 ≤ p ≤ 100) from the buckets.
 
@@ -226,8 +244,8 @@ Down sampling function is called `downsampling` in MAL, and it accepts the follo
  - SUM
  - LATEST
  - SUM_PER_MIN
- - MIN (TODO)
- - MAX (TODO)
+ - MIN
+ - MAX
  - MEAN (TODO)
  - COUNT (TODO)
 
@@ -254,6 +272,10 @@ They extract level relevant labels from metric labels, then informs the meter-sy
    extracts `sourceService` labels from the first array argument, extracts `destService` labels from the second array argument, extracts layer from `Layer` argument.
  - `processRelation(detect_point_label, [service_label1...], [instance_label1...], source_process_id_label, dest_process_id_label, component_label)` extracts `DetectPoint` labels from first argument, the label value should be `client` or `server`.
    extracts `Service` labels from the first array argument, extracts `Instance` labels from the second array argument, extracts `ProcessID` labels from the fourth and fifth arguments of the source and destination.
+
+## Decorate function
+`decorate({ me -> me.attr0 = ...})`: Decorate the [MeterEntity](../../../oap-server/server-core/src/main/java/org/apache/skywalking/oap/server/core/analysis/meter/MeterEntity.java) with additional attributes. 
+The closure takes the MeterEntity as an argument. This function is used to add additional attributes to the metrics. More details, see [Metrics Additional Attributes](metrics-additional-attributes.md).
 
 ## Configuration file
 

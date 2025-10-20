@@ -58,7 +58,7 @@ public class StorageModels implements IModelManager, ModelCreator, ModelManipula
         DefaultScopeDefine.nameOf(scopeId);
 
         List<ModelColumn> modelColumns = new ArrayList<>();
-        ShardingKeyChecker checker = new ShardingKeyChecker();
+        SeriesIDChecker checker = new SeriesIDChecker();
         SQLDatabaseModelExtension sqlDBModelExtension = new SQLDatabaseModelExtension();
         BanyanDBModelExtension banyanDBModelExtension = new BanyanDBModelExtension();
         ElasticSearchModelExtension elasticSearchModelExtension = new ElasticSearchModelExtension();
@@ -97,6 +97,10 @@ public class StorageModels implements IModelManager, ModelCreator, ModelManipula
 
         if (aClass.isAnnotationPresent(BanyanDB.StoreIDAsTag.class)) {
             banyanDBModelExtension.setStoreIDTag(true);
+        }
+
+        if (aClass.isAnnotationPresent(BanyanDB.IndexMode.class)) {
+            banyanDBModelExtension.setIndexMode(true);
         }
 
         // Set routing rules for ElasticSearch
@@ -149,7 +153,7 @@ public class StorageModels implements IModelManager, ModelCreator, ModelManipula
                            final String modelName,
                            final List<ModelColumn> modelColumns,
                            final int scopeId,
-                           ShardingKeyChecker checker,
+                           SeriesIDChecker checker,
                            final SQLDatabaseModelExtension sqlDBModelExtension,
                            final BanyanDBModelExtension banyanDBModelExtension) {
         if (log.isDebugEnabled()) {
@@ -192,23 +196,22 @@ public class StorageModels implements IModelManager, ModelCreator, ModelManipula
                 });
 
                 // ElasticSearch extension
-                final ElasticSearch.MatchQuery elasticSearchAnalyzer = field.getAnnotation(
-                    ElasticSearch.MatchQuery.class);
-                final ElasticSearch.Column elasticSearchColumn = field.getAnnotation(ElasticSearch.Column.class);
-                final ElasticSearch.Keyword keywordColumn = field.getAnnotation(ElasticSearch.Keyword.class);
-                final ElasticSearch.Routing routingColumn = field.getAnnotation(ElasticSearch.Routing.class);
-                ElasticSearchExtension elasticSearchExtension = new ElasticSearchExtension(
+                final var elasticSearchAnalyzer = field.getAnnotation(ElasticSearch.MatchQuery.class);
+                final var elasticSearchColumn = field.getAnnotation(ElasticSearch.Column.class);
+                final var keywordColumn = field.getAnnotation(ElasticSearch.Keyword.class);
+                final var routingColumn = field.getAnnotation(ElasticSearch.Routing.class);
+                final var enableDocValues = field.getAnnotation(ElasticSearch.EnableDocValues.class);
+                final var elasticSearchExtension = new ElasticSearchExtension(
                     elasticSearchAnalyzer == null ? null : elasticSearchAnalyzer.analyzer(),
                     elasticSearchColumn == null ? null : elasticSearchColumn.legacyName(),
                     keywordColumn != null,
-                    routingColumn != null
+                    routingColumn != null,
+                    enableDocValues != null
                 );
 
                 // BanyanDB extension
                 final BanyanDB.SeriesID banyanDBSeriesID = field.getAnnotation(
                     BanyanDB.SeriesID.class);
-                final BanyanDB.GlobalIndex banyanDBGlobalIndex = field.getAnnotation(
-                    BanyanDB.GlobalIndex.class);
                 final BanyanDB.NoIndexing banyanDBNoIndex = field.getAnnotation(
                     BanyanDB.NoIndexing.class);
                 final BanyanDB.IndexRule banyanDBIndexRule = field.getAnnotation(
@@ -217,12 +220,18 @@ public class StorageModels implements IModelManager, ModelCreator, ModelManipula
                     BanyanDB.MeasureField.class);
                 final BanyanDB.TopNAggregation topNAggregation = field.getAnnotation(
                     BanyanDB.TopNAggregation.class);
+                final BanyanDB.MatchQuery analyzer = field.getAnnotation(
+                    BanyanDB.MatchQuery.class);
+                final BanyanDB.EnableSort enableSort = field.getAnnotation(
+                    BanyanDB.EnableSort.class);
+                final boolean shouldIndex = (banyanDBNoIndex == null) && !column.storageOnly();
                 BanyanDBExtension banyanDBExtension = new BanyanDBExtension(
                     banyanDBSeriesID == null ? -1 : banyanDBSeriesID.index(),
-                    banyanDBGlobalIndex != null,
-                    banyanDBNoIndex == null && !column.storageOnly(),
+                    shouldIndex,
                     banyanDBIndexRule == null ? BanyanDB.IndexRule.IndexType.INVERTED : banyanDBIndexRule.indexType(),
-                    banyanDBMeasureField != null
+                    banyanDBMeasureField != null,
+                    analyzer == null ? null : analyzer.analyzer(),
+                    enableSort != null
                 );
 
                 if (topNAggregation != null) {
@@ -245,7 +254,7 @@ public class StorageModels implements IModelManager, ModelCreator, ModelManipula
                     elasticSearchExtension,
                     banyanDBExtension
                 );
-                if (banyanDBExtension.isShardingKey()) {
+                if (banyanDBExtension.isSeriesID()) {
                     checker.accept(modelName, modelColumn);
                 }
 
@@ -267,8 +276,7 @@ public class StorageModels implements IModelManager, ModelCreator, ModelManipula
                 if (column.dataType().isValue()) {
                     ValueColumnMetadata.INSTANCE.putIfAbsent(
                         modelName, column.name(),
-                        column.dataType(), column.function(), column.defaultValue(), scopeId
-                    );
+                        column.dataType(), column.defaultValue(), scopeId, column.multiIntValues());
                 }
             }
         }
@@ -316,14 +324,14 @@ public class StorageModels implements IModelManager, ModelCreator, ModelManipula
         return models;
     }
 
-    private static class ShardingKeyChecker {
+    private static class SeriesIDChecker {
         private final ArrayList<ModelColumn> keys = new ArrayList<>();
 
         /**
-         * @throws IllegalStateException if sharding key indices are conflicting.
+         * @throws IllegalStateException if seriesID indices are conflicting.
          */
         private void accept(String modelName, ModelColumn modelColumn) throws IllegalStateException {
-            final int idx = modelColumn.getBanyanDBExtension().getShardingKeyIdx();
+            final int idx = modelColumn.getBanyanDBExtension().getSeriesIDIdx();
             while (idx + 1 > keys.size()) {
                 keys.add(null);
             }
@@ -332,21 +340,21 @@ public class StorageModels implements IModelManager, ModelCreator, ModelManipula
                 throw new IllegalStateException(
                     modelName + "'s "
                         + "Column [" + exist.getColumnName() + "] and column [" + modelColumn.getColumnName()
-                        + " are conflicting with sharding key index=" + modelColumn.getBanyanDBExtension()
-                                                                                   .getShardingKeyIdx());
+                        + " are conflicting with seriesID index=" + modelColumn.getBanyanDBExtension()
+                                                                                   .getSeriesIDIdx());
             }
             keys.set(idx, modelColumn);
         }
 
         /**
          * @param modelName model name of the entity
-         * @throws IllegalStateException if sharding key indices are not continuous
+         * @throws IllegalStateException if seriesIDs indices are not continuous
          */
         private void check(String modelName) throws IllegalStateException {
             for (int i = 0; i < keys.size(); i++) {
                 final ModelColumn modelColumn = keys.get(i);
                 if (modelColumn == null) {
-                    throw new IllegalStateException("Sharding key index=" + i + " is missing in " + modelName);
+                    throw new IllegalStateException("seriesID index=" + i + " is missing in " + modelName);
                 }
             }
         }

@@ -29,12 +29,8 @@
                     "fontSize": 14,
                     "textAlign": "center"
                   },
-                  "metricMode": "Expression",
                   "expressions": [
                     "avg(service_apdex)/10000"
-                  ],
-                  "typesOfMQE": [
-                    "SINGLE_VALUE"
                   ]
                 },
                 {
@@ -53,12 +49,8 @@
                     "textAlign": "center",
                     "showUnit": true
                   },
-                  "metricMode": "Expression",
                   "expressions": [
                     "avg(service_sla)/100"
-                  ],
-                  "typesOfMQE": [
-                    "SINGLE_VALUE"
                   ]
                 },
                 {
@@ -77,12 +69,8 @@
                     "textAlign": "center",
                     "showUnit": true
                   },
-                  "metricMode": "Expression",
                   "expressions": [
                     "avg(service_cpm)"
-                  ],
-                  "typesOfMQE": [
-                    "SINGLE_VALUE"
                   ]
                 },
                 {
@@ -121,12 +109,8 @@
                       "widgetId": "0-0-7"
                     }
                   ],
-                  "metricMode": "Expression",
                   "expressions": [
                     "service_resp_time"
-                  ],
-                  "typesOfMQE": [
-                    "TIME_SERIES_VALUES"
                   ]
                 },
                 {
@@ -165,12 +149,8 @@
                       "widgetId": "0-0-7"
                     }
                   ],
-                  "metricMode": "Expression",
                   "expressions": [
                     "service_apdex/10000"
-                  ],
-                  "typesOfMQE": [
-                    "TIME_SERIES_VALUES"
                   ]
                 },
                 {
@@ -209,12 +189,8 @@
                       "widgetId": "0-0-7"
                     }
                   ],
-                  "metricMode": "Expression",
                   "expressions": [
-                    "relabels(service_percentile{_=\"0,1,2,3,4\"},_=\"P50,P75,P90,P95,P99\")"
-                  ],
-                  "typesOfMQE": [
-                    "TIME_SERIES_VALUES"
+                    "relabels(service_percentile{p='50,75,90,95,99'},p='50,75,90,95,99',percentile='50,75,90,95,99')"
                   ]
                 },
                 {
@@ -253,7 +229,6 @@
                       "widgetId": "0-0-7"
                     }
                   ],
-                  "metricMode": "Expression",
                   "expressions": [
                     "service_sla/100"
                   ]
@@ -294,7 +269,6 @@
                       "widgetId": "0-0-9"
                     }
                   ],
-                  "metricMode": "Expression",
                   "expressions": [
                     "service_cpm"
                   ]
@@ -336,14 +310,9 @@
                       "widgetId": "0-0-7"
                     }
                   ],
-                  "metricMode": "Expression",
                   "expressions": [
                     "service_throughput_received",
                     "service_throughput_sent"
-                  ],
-                  "typesOfMQE": [
-                    "TIME_SERIES_VALUES",
-                    "TIME_SERIES_VALUES"
                   ]
                 },
                 {
@@ -359,13 +328,13 @@
                   "graph": {
                     "type": "TopList"
                   },
-                  "metricMode": "Expression",
                   "expressions": [
                     "top_n(service_instance_cpm,10,des)"
                   ],
-                  "typesOfMQE": [
-                    "SORTED_LIST"
-                  ]
+                  "valueRelatedDashboard": "Mesh-Instance",
+                  "relatedTrace": {
+                    "refIdType": "none"
+                  }
                 },
                 {
                   "x": 8,
@@ -381,13 +350,13 @@
                     "type": "TopList",
                     "topN": "10"
                   },
-                  "metricMode": "Expression",
                   "expressions": [
                     "top_n(service_instance_resp_time,10,des)"
                   ],
-                  "typesOfMQE": [
-                    "SORTED_LIST"
-                  ]
+                  "valueRelatedDashboard": "Mesh-Instance",
+                  "relatedTrace": {
+                    "refIdType": "none"
+                  }
                 },
                 {
                   "x": 16,
@@ -403,13 +372,13 @@
                     "type": "TopList",
                     "topN": "10"
                   },
-                  "metricMode": "Expression",
                   "expressions": [
                     "top_n(service_instance_sla,10,asc)/100"
                   ],
-                  "typesOfMQE": [
-                    "SORTED_LIST"
-                  ]
+                  "valueRelatedDashboard": "Mesh-Instance",
+                  "relatedTrace": {
+                    "refIdType": "none"
+                  }
                 },
                 {
                   "x": 16,
@@ -425,10 +394,13 @@
                     "type": "TopList",
                     "topN": "10"
                   },
-                  "metricMode": "Expression",
                   "expressions": [
                     "top_n(endpoint_sla,10,asc)/100"
-                  ]
+                  ],
+                  "valueRelatedDashboard": "Mesh-Endpoint",
+                  "relatedTrace": {
+                    "refIdType": "none"
+                  }
                 },
                 {
                   "x": 8,
@@ -444,10 +416,13 @@
                     "type": "TopList",
                     "topN": "10"
                   },
-                  "metricMode": "Expression",
                   "expressions": [
                     "top_n(endpoint_resp_time,10,des)"
-                  ]
+                  ],
+                  "valueRelatedDashboard": "Mesh-Endpoint",
+                  "relatedTrace": {
+                    "refIdType": "none"
+                  }
                 },
                 {
                   "x": 0,
@@ -463,10 +438,13 @@
                     "type": "TopList",
                     "topN": "10"
                   },
-                  "metricMode": "Expression",
                   "expressions": [
                     "top_n(endpoint_cpm,10,des)"
-                  ]
+                  ],
+                  "valueRelatedDashboard": "Mesh-Endpoint",
+                  "relatedTrace": {
+                    "refIdType": "none"
+                  }
                 },
                 {
                   "x": 0,
@@ -475,12 +453,6 @@
                   "h": 13,
                   "i": "23",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "service_sidecar_internal_req_latency_nanos"
-                  ],
                   "graph": {
                     "type": "Line",
                     "step": false,
@@ -492,7 +464,10 @@
                   "widget": {
                     "title": "Proxy Sidecar Internal Latency in Nanoseconds (Request)",
                     "tips": "For more details to understand this metrics, refer to https://www.envoyproxy.io/docs/envoy/v1.22.0/api-v3/data/accesslog/v3/accesslog.proto.html#data-accesslog-v3-accesslogcommon"
-                  }
+                  },
+                  "expressions": [
+                    "service_sidecar_internal_req_latency_nanos"
+                  ]
                 },
                 {
                   "x": 8,
@@ -501,12 +476,6 @@
                   "h": 13,
                   "i": "24",
                   "type": "Widget",
-                  "metricTypes": [
-                    "readMetricsValues"
-                  ],
-                  "metrics": [
-                    "service_sidecar_internal_resp_latency_nanos"
-                  ],
                   "widget": {
                     "title": "Proxy Sidecar Internal Latency in Nanoseconds (Response)",
                     "tips": "For more details to understand this metrics, refer to https://www.envoyproxy.io/docs/envoy/v1.22.0/api-v3/data/accesslog/v3/accesslog.proto.html#data-accesslog-v3-accesslogcommon"
@@ -518,7 +487,10 @@
                     "showSymbol": true,
                     "showXAxis": true,
                     "showYAxis": true
-                  }
+                  },
+                  "expressions": [
+                    "service_sidecar_internal_resp_latency_nanos"
+                  ]
                 }
               ]
             },
@@ -537,32 +509,32 @@
                     "dashboardName": "Mesh-Instance",
                     "fontSize": 12
                   },
-                  "metrics": [
-                    "service_instance_cpm",
-                    "service_instance_sla",
-                    "service_instance_resp_time"
-                  ],
-                  "metricTypes": [
-                    "readMetricsValues",
-                    "readMetricsValues",
-                    "readMetricsValues"
-                  ],
                   "metricConfig": [
                     {
-                      "label": "Load",
                       "unit": "calls or packets / min",
-                      "calculation": "average"
+                      "label": "Load",
+                      "detailLabel": "load"
                     },
                     {
-                      "calculation": "percentageAvg",
+                      "label": "Success Rate",
                       "unit": "%",
-                      "label": "Success Rate"
+                      "detailLabel": "success_rate"
                     },
                     {
-                      "calculation": "average",
                       "label": "Latency",
-                      "unit": "ms"
+                      "unit": "ms",
+                      "detailLabel": "latency"
                     }
+                  ],
+                  "expressions": [
+                    "avg(service_instance_cpm)",
+                    "avg(service_instance_sla)/100",
+                    "avg(service_instance_resp_time)"
+                  ],
+                  "subExpressions": [
+                    "service_instance_cpm",
+                    "service_instance_sla/100",
+                    "service_instance_resp_time"
                   ]
                 }
               ]
@@ -584,32 +556,32 @@
                     "showXAxis": false,
                     "showYAxis": false
                   },
-                  "metrics": [
-                    "endpoint_cpm",
-                    "endpoint_sla",
-                    "endpoint_resp_time"
-                  ],
-                  "metricTypes": [
-                    "readMetricsValues",
-                    "readMetricsValues",
-                    "readMetricsValues"
-                  ],
                   "metricConfig": [
                     {
                       "label": "Load",
                       "unit": "calls or packets / min",
-                      "calculation": "average"
+                      "detailLabel": "load"
                     },
                     {
-                      "calculation": "percentageAvg",
+                      "label": "Success Rate",
                       "unit": "%",
-                      "label": "Success Rate"
+                      "detailLabel": "success_rate"
                     },
                     {
-                      "calculation": "average",
                       "label": "Latency",
-                      "unit": "ms"
+                      "unit": "ms",
+                      "detailLabel": "latency"
                     }
+                  ],
+                  "expressions": [
+                    "avg(endpoint_cpm)",
+                    "avg(endpoint_sla)/100",
+                    "avg(endpoint_resp_time)"
+                  ],
+                  "subExpressions": [
+                    "endpoint_cpm",
+                    "endpoint_sla/100",
+                    "endpoint_resp_time"
                   ]
                 }
               ]
@@ -642,70 +614,61 @@
                       "dashboard": "Mesh-Endpoint"
                     }
                   ],
-                  "linkServerMetrics": [
-                    "service_relation_server_resp_time",
-                    "service_relation_server_cpm"
-                  ],
-                  "linkClientMetrics": [
-                    "service_relation_client_cpm",
-                    "service_relation_client_resp_time"
-                  ],
-                  "nodeMetrics": [
-                    "service_cpm",
-                    "service_sla",
-                    "service_resp_time"
-                  ],
-                  "legend": [
-                    {
-                      "name": "service_sla",
-                      "condition": "<",
-                      "value": "9500"
-                    },
-                    {
-                      "name": "service_cpm",
-                      "condition": ">",
-                      "value": "1"
-                    }
-                  ],
+                  "nodeMetrics": [],
                   "description": {
                     "healthy": "Healthy",
                     "unhealthy": "Success Rate < 95% and Traffic > 1 calls or packets / min"
                   },
                   "nodeMetricConfig": [
                     {
-                      "unit": "calls or packets / min",
-                      "label": "Load"
+                      "label": "Load",
+                      "unit": "calls or packets / min"
                     },
                     {
-                      "calculation": "percentage",
-                      "unit": "%",
-                      "label": "Success Rate"
+                      "label": "Success Rate",
+                      "unit": "%"
                     },
                     {
-                      "unit": "ms",
-                      "label": "Latency"
+                      "label": "Latency",
+                      "unit": "ms"
                     }
                   ],
                   "linkServerMetricConfig": [
                     {
-                      "unit": "ms",
-                      "label": "Server Latency"
+                      "label": "Server Latency",
+                      "unit": "ms"
                     },
                     {
-                      "unit": "calls or packets / min",
-                      "label": "Server Load"
+                      "label": "Server Load",
+                      "unit": "calls or packets / min"
                     }
                   ],
                   "linkClientMetricConfig": [
                     {
-                      "unit": "calls or packets / min",
-                      "label": "Client Load"
+                      "label": "Client Load",
+                      "unit": "calls or packets / min"
                     },
                     {
-                      "unit": "ms",
-                      "label": "Client Latency"
+                      "label": "Client Latency",
+                      "unit": "ms"
                     }
-                  ]
+                  ],
+                  "linkServerExpressions": [
+                    "avg(service_relation_server_resp_time)",
+                    "avg(service_relation_server_cpm)"
+                  ],
+                  "linkClientExpressions": [
+                    "avg(service_relation_client_cpm)",
+                    "avg(service_relation_client_resp_time)"
+                  ],
+                  "nodeExpressions": [
+                    "avg(service_cpm)",
+                    "avg(service_sla/100)",
+                    "avg(service_resp_time)"
+                  ],
+                  "legendMQE": {
+                    "expression": "(avg(service_sla) < 9500) * (avg(service_cpm) > 1)  == 1"
+                  }
                 }
               ]
             },
@@ -741,8 +704,8 @@
                   "i": "2",
                   "type": "Text",
                   "graph": {
-                    "fontColor": "white",
-                    "backgroundColor": "blue",
+                    "fontColor": "theme",
+                    "backgroundColor": "theme",
                     "content": "eBPF Profiling support services written in C, C++, Golang, and Rust. SkyWalking Rover provides this profiling capability. ",
                     "fontSize": 14,
                     "textAlign": "left",
@@ -779,8 +742,7 @@
       ],
       "layer": "MESH",
       "entity": "Service",
-      "name": "Mesh-Service",
-      "id": "Mesh-Service"
+      "name": "Mesh-Service"
     }
   }
 ]

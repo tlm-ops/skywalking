@@ -28,6 +28,7 @@ import org.apache.skywalking.oap.server.core.server.GRPCHandlerRegisterImpl;
 import org.apache.skywalking.oap.server.core.server.HTTPHandlerRegister;
 import org.apache.skywalking.oap.server.core.server.HTTPHandlerRegisterImpl;
 import org.apache.skywalking.oap.server.core.server.auth.AuthenticationInterceptor;
+import org.apache.skywalking.oap.server.core.watermark.WatermarkGRPCInterceptor;
 import org.apache.skywalking.oap.server.library.module.ModuleDefine;
 import org.apache.skywalking.oap.server.library.module.ModuleProvider;
 import org.apache.skywalking.oap.server.library.module.ModuleStartException;
@@ -86,6 +87,9 @@ public class SharingServerModuleProvider extends ModuleProvider {
             httpServerConfig.setPort(config.getRestPort());
             httpServerConfig.setContextPath(config.getRestContextPath());
 
+            setBootingParameter("oap.external.http.host", config.getRestHost());
+            setBootingParameter("oap.external.http.port", config.getRestPort());
+
             httpServer = new HTTPServer(httpServerConfig);
             httpServer.initialize();
 
@@ -114,14 +118,13 @@ public class SharingServerModuleProvider extends ModuleProvider {
                     config.getGRPCPort()
                 );
             }
+            setBootingParameter("oap.external.grpc.host", config.getGRPCHost());
+            setBootingParameter("oap.external.grpc.port", config.getGRPCPort());
             if (config.getMaxMessageSize() > 0) {
                 grpcServer.setMaxMessageSize(config.getMaxMessageSize());
             }
             if (config.getMaxConcurrentCallsPerConnection() > 0) {
                 grpcServer.setMaxConcurrentCallsPerConnection(config.getMaxConcurrentCallsPerConnection());
-            }
-            if (config.getGRPCThreadPoolQueueSize() > 0) {
-                grpcServer.setThreadPoolQueueSize(config.getGRPCThreadPoolQueueSize());
             }
             if (config.getGRPCThreadPoolSize() > 0) {
                 grpcServer.setThreadPoolSize(config.getGRPCThreadPoolSize());
@@ -146,6 +149,7 @@ public class SharingServerModuleProvider extends ModuleProvider {
     public void start() {
         if (Objects.nonNull(grpcServer)) {
             grpcServer.addHandler(new HealthCheckServiceHandler());
+            grpcServer.addInterceptor(WatermarkGRPCInterceptor.INSTANCE);
         }
 
         if (Objects.nonNull(receiverGRPCHandlerRegister)) {

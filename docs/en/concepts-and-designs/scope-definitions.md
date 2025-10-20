@@ -414,3 +414,245 @@ This calculates the endpoint dimensional metrics data from each request of MQ sy
 | transmissionLatency | The latency from produce side to consume side .              |           | int(in ms) |
 | status              | Indicates the success or failure of the request.             |           | boolean    |
 | operation           | Indicates this access is on `Produce` or `Consume` side      |           | enum       |
+
+### SCOPES with `K8S` Prefix
+
+All metrics starting with `K8S` are derived from Kubernetes monitoring by Rover(eBPF agent).
+
+#### Service, Service Instance and relations
+
+For all `K8SService`, `K8SServiceInstance`, `K8SServiceRelation` and `K8SServiceInstanceRelation`, they all have the 
+following **package**/**protocol** level metric contents.
+
+| Name                                | Remarks                                                                                                                                     | Group Key | Type                 |
+|-------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|-----------|----------------------|
+| type                                | The metrics from log type, the following names should have the type prefix. The value may be connect, accept, close, write, read, protocol. |           | string               |
+| connect.duration                    | Connect to other service use duration.                                                                                                      |           | long(in nanoseconds) |
+| connect.success                     | The connect is success or not.                                                                                                              |           | boolean              |
+| accept.duration                     | Accept connection from client use duration.                                                                                                 |           | long(in nanoseconds) |
+| close.duration                      | Close one connection use duration.                                                                                                          |           | long(in nanoseconds) |
+| close.success                       | Close one connection is success or not.                                                                                                     |           | boolean              |
+| write.duration                      | Write data to the connection use duration.                                                                                                  |           | long(in nanoseconds) |
+| write.syscall                       | Write data to the connection syscall name. The value should be Write, Writev, Send, SendTo, SendMsg, SendMmsg, SendFile, SendFile64.        |           | string               |
+| write.l4.duration                   | Write data to the connection use duration on Linux Layer 4.                                                                                 |           | long(in nanoseconds) |
+| write.l4.transmitPackageCount       | Total package count on write data to the connection.                                                                                        |           | long                 |
+| write.l4.retransmitPackageCount     | Total retransmit package count on write data to the connection.                                                                             |           | long                 |
+| write.l4.totalPackageSize           | Total transmit package size on write data to the connection.                                                                                |           | long(bytes)          |
+| write.l3.duration                   | Write data to the connection use duration on Linux Layer 3.                                                                                 |           | long(in nanoseconds) |
+| write.l3.localDuration              | Write data to the connection use local duration on Linux Layer 3.                                                                           |           | long(in nanoseconds) |
+| write.l3.outputDuration             | Write data to the connection use output duration on Linux Layer 3.                                                                          |           | long(in nanoseconds) |
+| write.l3.resolveMACCount            | Total resolve remote MAC address count on write data to the connection.                                                                     |           | long                 |
+| write.l3.resolveMACDuration         | Total resolve remote MAC address use duration on write data to the connection.                                                              |           | long(in nanoseconds) |
+| write.l3.netFilterCount             | Total do net filtering count on write data to the connection.                                                                               |           | long                 |
+| write.l3.netFilterDuration          | Total do net filtering use duration on write data to the connection.                                                                        |           | long(in nanoseconds) |
+| write.l2.duration                   | Write data to the connection use duration on Linux L2.                                                                                      |           | long(nanoseconds)    |
+| write.l2.networkDeviceName          | The network device name on write data to the connection.                                                                                    |           | string               |
+| write.l2.enterQueueBufferCount      | The write package count to the network device queue on write data to the connection.                                                        |           | long                 |
+| write.l2.readySendDuration          | Total ready send buffer duration on write data to the connection.                                                                           |           | long(in nanoseconds) |
+| write.l2.networkDeviceSendDuration  | Total network send buffer use duration on write data to the connection.                                                                     |           | long(in nanoseconds) |
+| read.duration                       | Read data from the connection use duration.                                                                                                 |           | long(in nanoseconds) | 
+| read.syscall                        | Read data from the connection syscall name. The value should Read, Readv, Recv, RecvFrom, RecvMsg, RecvMmsg.                                |           | string               |
+| read.l4.duration                    | Read data to the connection use duration on Linux Layer 4.                                                                                  |           | long(in nanoseconds) | 
+| read.l3.duration                    | Read data to the connection use duration on Linux Layer 3.                                                                                  |           | long(in nanoseconds) | 
+| read.l3.rcvDuration                 | Read data to the connection use receive duration on Linux Layer 3.                                                                          |           | long(in nanoseconds) | 
+| read.l3.localDuration               | Read data to the connection use local duration on Linux Layer 3.                                                                            |           | long(in nanoseconds) |
+| read.l3.netFilterCount              | Total do net filtering count on read data from the connection.                                                                              |           | long                 |
+| read.l3.netFilterDuration           | Total do net filtering use duration on read data from the connection.                                                                       |           | long(in nanoseconds) |
+| read.l2.netDeviceName               | The network device name on read data from the connection.                                                                                   |           | string               | 
+| read.l2.packageCount                | Total read package count on the connection.                                                                                                 |           | long                 |
+| read.l2.totalPackageSize            | Total read package size on the connection.                                                                                                  |           | long(bytes)          |
+| read.l2.packageToQueueDuration      | Total read package to the queue duration on the connection.                                                                                 |           | long(in nanoseconds) |
+| read.l2.rcvPackageFromQueueDuration | Total read package from the queue duration on the connection.                                                                               |           | long(in nanoseconds) | 
+| protocol.type                       | The protocol type name, the following names should have the type prefix. The value should be HTTP.                                          |           | string               |
+| protocol.success                    | This protocol request and response is success or not.                                                                                       |           | boolean              | 
+| protocol.http.latency               | The latency of HTTP response.                                                                                                               |           | long(in nanoseconds) |
+| protocol.http.url                   | The url path of HTTP request.                                                                                                               |           | string               |
+| protocol.http.method                | The method name of HTTP request.                                                                                                            |           | string               | 
+| protocol.http.statusCode            | The response code of HTTP response.                                                                                                         |           | int                  | 
+| protocol.http.sizeOfRequestHeader   | The header size of HTTP request.                                                                                                            |           | long(bytes)          |
+| protocol.http.sizeOfRequestBody     | The body size of HTTP request.                                                                                                              |           | long(bytes)          |
+| protocol.http.sizeOfResponseHeader  | The header size of HTTP response.                                                                                                           |           | long(bytes)          |
+| protocol.http.sizeOfResponseBody    | The body size of HTTP response.                                                                                                             |           | long(bytes)          |
+
+##### SCOPE `K8SService`
+
+| Name        | Remarks                                                            | Group Key | Type   |
+|-------------|--------------------------------------------------------------------|-----------|--------|
+| name        | The service name in kubernetes.                                    |           | string |
+| layer       | The layer in kubernetes service.                                   |           | string |
+| detectPoint | Where the relation is detected. The value may be client or server. |           | enum   |
+
+#### SCOPE `K8SServiceInstance`
+
+| Name                | Remarks                                                            | Group Key | Type   |
+|---------------------|--------------------------------------------------------------------|-----------|--------|
+| serviceName         | The service name in kubernetes.                                    |           | string |
+| serviceInstanceName | The pod name in kubernetes.                                        |           | string |
+| layer               | The layer of kubernetes service.                                   |           | string |
+| detectPoint         | Where the relation is detected. The value may be client or server. |           | enum   |
+
+##### SCOPE `K8SServiceRelation`
+
+| Name              | Remarks                                                            | Group Key | Type   |
+|-------------------|--------------------------------------------------------------------|-----------|--------|
+| sourceServiceName | The source service name in kubernetes.                             |           | string |
+| sourceLayer       | The source layer service in kubernetes.                            |           | string |
+| detectPoint       | Where the relation is detected. The value may be client or server. |           | enum   |
+| componentId       | The ID of component used in this call.                             |           | string |
+| tlsMode           | The TLS mode of relation. The value may be Plain or TLS.           |           | enum   |
+| destServiceName   | The dest service name in kubernetes.                               |           | string |
+| destLayer         | The dest layer service in kubernetes.                              |           | string |
+
+##### SCOPE `K8SServiceRelation`
+
+| Name              | Remarks                                                            | Group Key | Type   |
+|-------------------|--------------------------------------------------------------------|-----------|--------|
+| sourceServiceName | The source service name in kubernetes.                             |           | string |
+| sourceLayer       | The source layer service in kubernetes.                            |           | string |
+| detectPoint       | Where the relation is detected. The value may be client or server. |           | enum   |
+| componentId       | The ID of component used in this call.                             |           | string |
+| tlsMode           | The TLS mode of relation. The value may be Plain or TLS.           |           | enum   |
+| destServiceName   | The dest service name in kubernetes.                               |           | string |
+| destLayer         | The dest layer service in kubernetes.                              |           | string |
+
+##### SCOPE `K8SServiceInstanceRelation`
+
+| Name                      | Remarks                                                            | Group Key | Type   |
+|---------------------------|--------------------------------------------------------------------|-----------|--------|
+| sourceServiceName         | The source service name in kubernetes.                             |           | string |
+| sourceServiceInstanceName | The source pod name in kubernetes.                                 |           | string |
+| sourceLayer               | The source layer service in kubernetes.                            |           | string |
+| detectPoint               | Where the relation is detected. The value may be client or server. |           | enum   |
+| componentId               | The ID of component used in this call.                             |           | string |
+| tlsMode                   | The TLS mode of relation. The value may be Plain or TLS.           |           | enum   |
+| destServiceName           | The dest service name in kubernetes.                               |           | string |
+| destServiceInstanceName   | The dest pod name in kubernetes.                                   |           | string |
+| destLayer                 | The dest layer service in kubernetes.                              |           | string |
+
+#### Endpoint 
+
+For `K8SEndpoint`, they only have the following **protocol** level metric contents.
+
+| Name                                | Remarks                                                                                                                                     | Group Key | Type                 |
+|-------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|-----------|----------------------|
+| protocol.type                       | The protocol type name, the following names should have the type prefix. The value should be HTTP.                                          |           | string               |
+| protocol.success                    | This protocol request and response is success or not.                                                                                       |           | boolean              |
+| protocol.http.latency               | The latency of HTTP response.                                                                                                               |           | long(in nanoseconds) |
+| protocol.http.url                   | The url path of HTTP request.                                                                                                               |           | string               |
+| protocol.http.method                | The method name of HTTP request.                                                                                                            |           | string               |
+| protocol.http.statusCode            | The response code of HTTP response.                                                                                                         |           | int                  |
+| protocol.http.sizeOfRequestHeader   | The header size of HTTP request.                                                                                                            |           | long(bytes)          |
+| protocol.http.sizeOfRequestBody     | The body size of HTTP request.                                                                                                              |           | long(bytes)          |
+| protocol.http.sizeOfResponseHeader  | The header size of HTTP response.                                                                                                           |           | long(bytes)          |
+| protocol.http.sizeOfResponseBody    | The body size of HTTP response.                                                                                                             |           | long(bytes)          |
+
+##### SCOPE `K8SEndpoint`
+
+| Name         | Remarks                                                 | Group Key | Type   |
+|--------------|---------------------------------------------------------|-----------|--------|
+| serviceName  | The service name in kubernetes.                         |           | string |
+| layer        | The layer in kubernetes service.                        |           | string |
+| endpointName | The endpoint name detect in kubernetes service.         |           | string |
+| duration     | The duration of the service endpoint response latency.  |           | long   |
+
+### SCOPES with `Cilium` Prefix
+
+All metrics starting with `Cilium` are derived from Cilium monitoring by Cilium Hubble.
+
+#### Service, Service Instance and relations
+
+For all `CiliumService`, `CiliumServiceInstance`, `CiliumServiceRelation` and `CiliumServiceInstanceRelation`, they all have the
+following **L4**/**L7** metric contents.
+
+| Name                  | Remarks                                                                     | Group Key | Type   |
+|-----------------------|-----------------------------------------------------------------------------|-----------|--------|
+| verdict               | The metrics verdict from Flow. The value may be `forwarded` and `dropped`.  |           | string |
+| type                  | The metrics type from Flow. The value may be `tcp`, `http`, `dns`, `kakfa`. |           | string |
+| direction             | The metrics direction from Flow. The value may be `ingress` and `egress`.   |           | string |
+| dropReason            | When the verdict is `dropped`, the drop reason would be recorded.           |           | string |
+| http.url              | The URL of the HTTP request.                                                |           | string |
+| http.code             | The Response code of the HTTP response.                                     |           | int    |
+| http.protocol         | The protocol of the HTTP request.                                           |           | string |
+| http.method           | The method of the HTTP request.                                             |           | string |
+| kafka.errorCode       | The error code of the Kafka request.                                        |           | int    |
+| kafka.errorCodeString | The error code explaination of the Kafka request.                           |           | string |
+| kafka.apiVersion      | The API version of the Kafka request.                                       |           | string |
+| kafka.apiKey          | The API key of the Kafka request.                                           |           | string |
+| kafka.correlationId   | The correlation ID of the Kafka request.                                    |           | string |
+| kafka.topic           | The topic of the Kafka request.                                             |           | string |
+| dns.domain            | The domain of the DNS request.                                              |           | string |
+| dns.queryType         | The query type of the DNS request.                                          |           | string |
+| dns.rcode             | The response code of the DNS request.                                       |           | int    |
+| dns.recodeString      | The response code explaination of the DNS request.                          |           | string |
+| dns.ttl               | The TTL of the DNS request.                                                 |           | int    |
+| dns.ipCount           | The count of the IP addresses of the DNS responsed.                         |           | int    |
+| duration              | The duration(millisecond) of the L7 response.                               |           | long   |
+| success               | Is the response success of the L7 response.                                 |           | bool   |
+
+##### SCOPE `CiliumService`
+
+| Name        | Remarks                                                            | Group Key | Type   |
+|-------------|--------------------------------------------------------------------|-----------|--------|
+| name        | The service name in Cilium.                                        |           | string |
+| layer       | The layer in Cilium service.                                       |           | string |
+| detectPoint | Where the relation is detected. The value may be client or server. |           | enum   |
+
+##### SCOPE `CiliumServiceInstance`
+
+| Name                | Remarks                                                            | Group Key | Type   |
+|---------------------|--------------------------------------------------------------------|-----------|--------|
+| serviceName         | The service name in Cilium.                                        |           | string |
+| serviceInstanceName | The pod name in Cilium.                                            |           | string |
+| layer               | The layer of Cilium service.                                       |           | string |
+| detectPoint         | Where the relation is detected. The value may be client or server. |           | enum   |
+
+##### SCOPE `CiliumServiceRelation`
+
+| Name              | Remarks                                                            | Group Key | Type   |
+|-------------------|--------------------------------------------------------------------|-----------|--------|
+| sourceServiceName | The source service name in Cilium.                                 |           | string |
+| sourceLayer       | The source layer service in Cilium.                                |           | string |
+| detectPoint       | Where the relation is detected. The value may be client or server. |           | enum   |
+| componentId       | The ID of component used in this call.                             |           | int    |
+| destServiceName   | The dest service name in Cilium.                                   |           | string |
+| destLayer         | The dest layer service in Cilium.                                  |           | string |
+
+##### SCOPE `CiliumServiceInstanceRelation`
+
+| Name                      | Remarks                                                            | Group Key | Type   |
+|---------------------------|--------------------------------------------------------------------|-----------|--------|
+| sourceServiceName         | The source service name in Cilium.                                 |           | string |
+| sourceServiceInstanceName | The source pod name in Cilium.                                     |           | string |
+| sourceLayer               | The source layer service in Cilium.                                |           | string |
+| detectPoint               | Where the relation is detected. The value may be client or server. |           | enum   |
+| componentId               | The ID of component used in this call.                             |           | int    |
+| destServiceName           | The dest service name in Cilium.                                   |           | string |
+| destServiceInstanceName   | The dest pod name in Cilium.                                       |           | string |
+| destLayer                 | The dest layer service in Cilium.                                  |           | string |
+
+#### Endpoint and Endpoint Relation
+
+For `CiliumEndpoint` and `CiliumEndpointRelation`, they have all the fields of **L4**/**L7** metric contents, but the `type` only would be `http`, `dns` or `kafka`.
+
+##### SCOPE `CiliumEndpoint`
+
+| Name         | Remarks                                                 | Group Key | Type   |
+|--------------|---------------------------------------------------------|-----------|--------|
+| serviceName  | The service name in Cilium.                             |           | string |
+| layer        | The layer in Cilium service.                            |           | string |
+| endpointName | The endpoint name detect in Cilium service.             |           | string |
+
+##### SCOPE `CiliumEndpointRelation`
+
+| Name               | Remarks                                                            | Group Key | Type   |
+|--------------------|--------------------------------------------------------------------|-----------|--------|
+| sourceServiceName  | The source service name in Cilium.                                 |           | string |
+| sourceLayer        | The layer in Cilium source service.                                |           | enum   |
+| sourceEndpointName | The endpoint name detect in Cilium source service.                 |           | string |
+| detectPoint        | Where the relation is detected. The value may be client or server. |           | enum   |
+| componentId        | The ID of component used in this call.                             |           | int    |
+| destServiceName    | The dest service name in Cilium.                                   |           | string |
+| destLayer          | The layer in Cilium dest service.                                  |           | enum   |
+| destEndpointName   | The endpoint name detect in Cilium dest service.                   |           | string |
+
+

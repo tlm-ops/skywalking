@@ -27,7 +27,6 @@ import org.apache.skywalking.oap.server.core.alarm.provider.webhook.WebhookSetti
 import org.apache.skywalking.oap.server.core.alarm.provider.wechat.WechatSettings;
 import org.apache.skywalking.oap.server.core.alarm.provider.welink.WeLinkSettings;
 import org.apache.skywalking.oap.server.core.query.enumeration.Scope;
-import org.apache.skywalking.oap.server.core.query.sql.Function;
 import org.apache.skywalking.oap.server.core.storage.annotation.Column;
 import org.apache.skywalking.oap.server.core.storage.annotation.ValueColumnMetadata;
 import org.junit.jupiter.api.Assertions;
@@ -43,16 +42,16 @@ public class RulesReaderTest {
     @BeforeEach
     public void setUp() {
         ValueColumnMetadata.INSTANCE.putIfAbsent(
-            "service_percent", "testColumn", Column.ValueDataType.COMMON_VALUE, Function.Avg, 0, Scope.Service.getScopeId());
+            "service_percent", "testColumn", Column.ValueDataType.COMMON_VALUE, 0, Scope.Service.getScopeId());
         ValueColumnMetadata.INSTANCE.putIfAbsent(
-            "endpoint_percent", "testColumn", Column.ValueDataType.COMMON_VALUE, Function.Avg, 0, Scope.Endpoint.getScopeId());
+            "endpoint_percent", "testColumn", Column.ValueDataType.COMMON_VALUE, 0, Scope.Endpoint.getScopeId());
     }
 
     @Test
     public void testReadRules() {
         RulesReader reader = new RulesReader(this.getClass()
                 .getClassLoader()
-                .getResourceAsStream("alarm-settings.yml"));
+                .getResourceAsStream("alarm-settings.yml"), null);
         Rules rules = reader.readRules();
 
         List<AlarmRule> ruleList = rules.getRules();
@@ -75,6 +74,10 @@ public class RulesReaderTest {
         WebhookSettings rulesWebhooks = rules.getWebhookSettingsMap().get(AlarmHooksType.webhook.name() + ".default");
         Assertions.assertEquals(2, rulesWebhooks.getUrls().size());
         Assertions.assertEquals("http://127.0.0.1/go-wechat/", rulesWebhooks.getUrls().get(1));
+        WebhookSettings rulesWebhooks2 = rules.getWebhookSettingsMap().get(AlarmHooksType.webhook.name() + ".custom1");
+        Assertions.assertEquals(2, rulesWebhooks2.getHeaders().size());
+        Assertions.assertEquals("Bearer bearer_token", rulesWebhooks2.getHeaders().get("Authorization"));
+        Assertions.assertEquals("arbitrary-additional-http-headers", rulesWebhooks2.getHeaders().get("x-company-header"));
 
         GRPCAlarmSetting grpcAlarmSetting = rules.getGrpcAlarmSettingMap().get(AlarmHooksType.gRPC.name() + ".default");
         assertNotNull(grpcAlarmSetting);

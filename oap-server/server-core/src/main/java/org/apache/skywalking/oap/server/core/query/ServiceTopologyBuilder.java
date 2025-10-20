@@ -22,16 +22,21 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.skywalking.oap.server.core.Const;
 import org.apache.skywalking.oap.server.core.CoreModule;
 import org.apache.skywalking.oap.server.core.analysis.IDManager;
+import org.apache.skywalking.oap.server.core.analysis.Layer;
 import org.apache.skywalking.oap.server.core.analysis.manual.networkalias.NetworkAddressAlias;
 import org.apache.skywalking.oap.server.core.cache.NetworkAddressAliasCache;
 import org.apache.skywalking.oap.server.core.config.IComponentLibraryCatalogService;
 import org.apache.skywalking.oap.server.core.query.type.Call;
 import org.apache.skywalking.oap.server.core.query.type.Node;
+import org.apache.skywalking.oap.server.core.query.type.Service;
 import org.apache.skywalking.oap.server.core.query.type.Topology;
+import org.apache.skywalking.oap.server.core.query.type.debugging.DebuggingSpan;
+import org.apache.skywalking.oap.server.core.query.type.debugging.DebuggingTraceContext;
 import org.apache.skywalking.oap.server.core.source.DetectPoint;
 import org.apache.skywalking.oap.server.library.module.ModuleManager;
 import org.apache.skywalking.oap.server.library.util.StringUtil;
@@ -41,6 +46,8 @@ class ServiceTopologyBuilder {
     private final IComponentLibraryCatalogService componentLibraryCatalogService;
     private final NetworkAddressAliasCache networkAddressAliasCache;
     private final String userID;
+    private final ModuleManager moduleManager;
+    private MetadataQueryService metadataQueryService;
 
     ServiceTopologyBuilder(ModuleManager moduleManager) {
         this.componentLibraryCatalogService = moduleManager.find(CoreModule.NAME)
@@ -50,6 +57,32 @@ class ServiceTopologyBuilder {
                                                      .provider()
                                                      .getService(NetworkAddressAliasCache.class);
         this.userID = IDManager.ServiceID.buildId(Const.USER_SERVICE_NAME, false);
+        this.moduleManager = moduleManager;
+    }
+
+    private MetadataQueryService getMetadataQueryService() {
+        if (metadataQueryService == null) {
+            this.metadataQueryService = moduleManager.find(CoreModule.NAME)
+                                                     .provider()
+                                                     .getService(MetadataQueryService.class);
+        }
+        return metadataQueryService;
+    }
+
+    Topology buildDebuggable(List<Call.CallDetail> serviceRelationClientCalls,
+                             List<Call.CallDetail> serviceRelationServerCalls) {
+        DebuggingTraceContext traceContext = DebuggingTraceContext.TRACE_CONTEXT.get();
+        DebuggingSpan span = null;
+        try {
+            if (traceContext != null) {
+                span = traceContext.createSpan("Build service topology");
+            }
+            return build(serviceRelationClientCalls, serviceRelationServerCalls);
+        } finally {
+            if (traceContext != null && span != null) {
+                traceContext.stopSpan(span);
+            }
+        }
     }
 
     Topology build(List<Call.CallDetail> serviceRelationClientCalls, List<Call.CallDetail> serviceRelationServerCalls) {
@@ -193,11 +226,18 @@ class ServiceTopologyBuilder {
         return topology;
     }
 
+    @SneakyThrows
     private Node buildNode(String sourceId, IDManager.ServiceID.ServiceIDDefinition sourceService) {
         Node serviceNode = new Node();
         serviceNode.setId(sourceId);
         serviceNode.setName(sourceService.getName());
         serviceNode.setReal(sourceService.isReal());
+        Service service = getMetadataQueryService().getService(sourceId);
+        if (service != null) {
+            serviceNode.getLayers().addAll(service.getLayers());
+        } else {
+            serviceNode.getLayers().add(Layer.UNDEFINED.name());
+        }
         return serviceNode;
     }
 }

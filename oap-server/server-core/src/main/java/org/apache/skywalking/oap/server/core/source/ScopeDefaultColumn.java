@@ -37,14 +37,16 @@ public class ScopeDefaultColumn {
     private boolean isID;
     private int length;
     private final boolean groupByCondInTopN;
+    private final boolean attribute;
 
-    public ScopeDefaultColumn(String fieldName, String columnName, Class<?> type, boolean isID, int length, boolean groupByCondInTopN) {
+    public ScopeDefaultColumn(String fieldName, String columnName, Class<?> type, boolean isID, int length, boolean groupByCondInTopN, boolean attribute) {
         this.fieldName = fieldName;
         this.columnName = columnName;
         this.type = type;
         this.isID = isID;
         this.length = length;
         this.groupByCondInTopN = groupByCondInTopN;
+        this.attribute = attribute;
     }
 
     @Target({ElementType.FIELD})
@@ -66,9 +68,22 @@ public class ScopeDefaultColumn {
         int length() default 256;
 
         /**
+         * Indicate whether this column is an attribute.
+         * Attributes are optional fields, which are set by the source decorator and can be used for query conditions.
+         *
+         * @since 10.2.0
+         */
+        boolean isAttribute() default false;
+    }
+
+    @Target({ElementType.FIELD})
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface BanyanDB {
+        /**
          * Indicate whether this column is a condition for groupBy in the TopN Aggregation.
          *
          * @since 9.5.0
+         * @since 10.2.0 moved out from {@link DefinedByField} to {@link BanyanDB}
          */
         boolean groupByCondInTopN() default false;
     }

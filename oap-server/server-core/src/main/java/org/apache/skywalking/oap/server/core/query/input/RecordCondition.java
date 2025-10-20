@@ -20,6 +20,7 @@ package org.apache.skywalking.oap.server.core.query.input;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.apache.skywalking.oap.server.core.query.MetricsMetadataQueryService;
 import org.apache.skywalking.oap.server.core.query.enumeration.MetricsType;
 import org.apache.skywalking.oap.server.core.query.enumeration.Order;
@@ -34,6 +35,7 @@ import org.apache.skywalking.oap.server.library.util.StringUtil;
  */
 @Setter
 @Getter
+@ToString
 public class RecordCondition {
     /**
      * Metrics name
@@ -55,7 +57,7 @@ public class RecordCondition {
             final Entity entity = new Entity();
             entity.setScope(condition.getScope() == null ? Scope.Service : condition.getScope());
             entity.setServiceName(condition.getParentService());
-            entity.setNormal(condition.isNormal());
+            entity.setNormal(condition.getNormal());
             this.parentEntity = entity;
         }
         this.topN = condition.getTopN();

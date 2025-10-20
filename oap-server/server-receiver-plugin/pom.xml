@@ -21,7 +21,7 @@
     <parent>
         <artifactId>oap-server</artifactId>
         <groupId>org.apache.skywalking</groupId>
-        <version>9.6.0</version>
+        <version>${revision}</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -48,6 +48,7 @@
         <module>skywalking-ebpf-receiver-plugin</module>
         <module>skywalking-telegraf-receiver-plugin</module>
         <module>aws-firehose-receiver</module>
+        <module>skywalking-async-profiler-receiver-plugin</module>
     </modules>
 
     <dependencies>

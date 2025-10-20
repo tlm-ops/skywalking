@@ -24,6 +24,12 @@ services:
       - "12800:12800"
     networks:
       - e2e
+  banyandb:
+    extends:
+      file: ../../script/docker-compose/base-compose.yml
+      service: banyandb
+    ports:
+      - 17912
   es:
     image: elastic/elasticsearch:8.3.2
     expose:
@@ -68,7 +74,7 @@ services:
       retries: 120
       test: ["CMD", "sh", "-c", "nc -vz localhost 9114"]
   otel-collector:
-    image: otel/opentelemetry-collector:0.72.0
+    image: otel/opentelemetry-collector:${OTEL_COLLECTOR_VERSION}
     networks:
       - e2e
     command: [ "--config=/etc/otel-collector-config.yaml" ]

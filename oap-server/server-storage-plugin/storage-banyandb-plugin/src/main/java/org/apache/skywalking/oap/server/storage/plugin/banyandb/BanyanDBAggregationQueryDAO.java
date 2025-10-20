@@ -19,6 +19,7 @@
 package org.apache.skywalking.oap.server.storage.plugin.banyandb;
 
 import com.google.common.collect.ImmutableSet;
+import org.apache.skywalking.banyandb.v1.client.AbstractQuery;
 import org.apache.skywalking.banyandb.v1.client.DataPoint;
 import org.apache.skywalking.banyandb.v1.client.MeasureQuery;
 import org.apache.skywalking.banyandb.v1.client.MeasureQueryResponse;
@@ -64,28 +65,27 @@ public class BanyanDBAggregationQueryDAO extends AbstractBanyanDBDAO implements 
         }
 
         // BanyanDB server-side TopN support for metrics pre-aggregation.
-        if (schema.getTopNSpec() != null) {
+        if (schema.getTopNSpec() != null && CollectionUtils.isEmpty(condition.getAttributes())) {
             // 1) no additional conditions
             // 2) additional conditions are all group by tags
             if (CollectionUtils.isEmpty(additionalConditions) ||
                     additionalConditions.stream().map(KeyValue::getKey).collect(Collectors.toSet())
-                            .equals(ImmutableSet.copyOf(schema.getTopNSpec().getGroupByTagNames()))) {
+                            .equals(ImmutableSet.copyOf(schema.getTopNSpec().getGroupByTagNamesList()))) {
                 return serverSideTopN(condition, schema, spec, timestampRange, additionalConditions);
             }
         }
 
-        return directMetricsTopN(condition, valueColumnName, spec, timestampRange, additionalConditions);
+        return directMetricsTopN(condition, schema, valueColumnName, spec, timestampRange, additionalConditions);
     }
 
     List<SelectedRecord> serverSideTopN(TopNCondition condition, MetadataRegistry.Schema schema, MetadataRegistry.ColumnSpec valueColumnSpec,
                                         TimestampRange timestampRange, List<KeyValue> additionalConditions) throws IOException {
         TopNQueryResponse resp = null;
         if (condition.getOrder() == Order.DES) {
-            resp = topN(schema, timestampRange, condition.getTopN(), additionalConditions);
+            resp = topNQueryDebuggable(schema, timestampRange, condition.getTopN(), AbstractQuery.Sort.DESC, additionalConditions, condition.getAttributes());
         } else {
-            resp = bottomN(schema, timestampRange, condition.getTopN(), additionalConditions);
+            resp = topNQueryDebuggable(schema, timestampRange, condition.getTopN(), AbstractQuery.Sort.ASC, additionalConditions, condition.getAttributes());
         }
-
         if (resp.size() == 0) {
             return Collections.emptyList();
         } else if (resp.size() > 1) { // since we have done aggregation, i.e. MEAN
@@ -103,9 +103,9 @@ public class BanyanDBAggregationQueryDAO extends AbstractBanyanDBDAO implements 
         return topNList;
     }
 
-    List<SelectedRecord> directMetricsTopN(TopNCondition condition, String valueColumnName, MetadataRegistry.ColumnSpec valueColumnSpec,
+    List<SelectedRecord> directMetricsTopN(TopNCondition condition, MetadataRegistry.Schema schema, String valueColumnName, MetadataRegistry.ColumnSpec valueColumnSpec,
                                            TimestampRange timestampRange, List<KeyValue> additionalConditions) throws IOException {
-        MeasureQueryResponse resp = query(condition.getName(), TAGS, Collections.singleton(valueColumnName),
+        MeasureQueryResponse resp = queryDebuggable(schema, TAGS, Collections.singleton(valueColumnName),
                 timestampRange, new QueryBuilder<MeasureQuery>() {
                     @Override
                     protected void apply(MeasureQuery query) {
@@ -121,6 +121,15 @@ public class BanyanDBAggregationQueryDAO extends AbstractBanyanDBDAO implements 
                                             additionalCondition.getKey(),
                                             additionalCondition.getValue()
                                     )));
+                        }
+                        if (CollectionUtils.isNotEmpty(condition.getAttributes())) {
+                            condition.getAttributes().forEach(attr -> {
+                                if (attr.isEquals()) {
+                                    query.and(eq(attr.getKey(), attr.getValue()));
+                                } else {
+                                    query.and(ne(attr.getKey(), attr.getValue()));
+                                }
+                            });
                         }
                     }
                 });

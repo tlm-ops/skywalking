@@ -23,7 +23,7 @@
     <parent>
         <groupId>org.apache.skywalking</groupId>
         <artifactId>server-receiver-plugin</artifactId>
-        <version>9.6.0</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>aws-firehose-receiver</artifactId>

@@ -20,13 +20,17 @@ package org.apache.skywalking.oap.server.receiver.otel.otlp;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
+import io.opentelemetry.proto.common.v1.AnyValue;
 import io.opentelemetry.proto.common.v1.KeyValue;
+import io.opentelemetry.proto.metrics.v1.DataPointFlags;
 import io.opentelemetry.proto.metrics.v1.Sum;
 import io.opentelemetry.proto.metrics.v1.SummaryDataPoint;
 import io.vavr.Function1;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.skywalking.oap.meter.analyzer.MetricConvert;
+import org.apache.skywalking.oap.meter.analyzer.dsl.SampleFamily;
 import org.apache.skywalking.oap.meter.analyzer.prometheus.PrometheusMetricConverter;
 import org.apache.skywalking.oap.meter.analyzer.prometheus.rule.Rule;
 import org.apache.skywalking.oap.meter.analyzer.prometheus.rule.Rules;
@@ -41,6 +45,10 @@ import org.apache.skywalking.oap.server.library.util.prometheus.metrics.Histogra
 import org.apache.skywalking.oap.server.library.util.prometheus.metrics.Metric;
 import org.apache.skywalking.oap.server.library.util.prometheus.metrics.Summary;
 import org.apache.skywalking.oap.server.receiver.otel.OtelMetricReceiverConfig;
+import org.apache.skywalking.oap.server.telemetry.TelemetryModule;
+import org.apache.skywalking.oap.server.telemetry.api.HistogramMetrics;
+import org.apache.skywalking.oap.server.telemetry.api.MetricsCreator;
+import org.apache.skywalking.oap.server.telemetry.api.MetricsTag;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -70,41 +78,52 @@ public class OpenTelemetryMetricRequestProcessor implements Service {
             .put("job", "job_name")
             .put("service.name", "job_name")
             .build();
-    private List<PrometheusMetricConverter> converters;
+    private List<MetricConvert> converters;
+
+    @Getter(lazy = true)
+    private final MetricsCreator metricsCreator = manager.find(TelemetryModule.NAME).provider().getService(MetricsCreator.class);
+
+    @Getter(lazy = true)
+    private final HistogramMetrics processHistogram = getMetricsCreator().createHistogramMetric(
+        "otel_metrics_latency",
+        "The latency to process the metrics request",
+        MetricsTag.EMPTY_KEY,
+        MetricsTag.EMPTY_VALUE,
+        .005, .01, .025, .05, .075, .1, .25, .5, .75, 1, 2.5, 5, 7.5, 10, 15, 30, 60, 120
+    );
 
     public void processMetricsRequest(final ExportMetricsServiceRequest requests) {
-        requests.getResourceMetricsList().forEach(request -> {
-            if (log.isDebugEnabled()) {
-                log.debug("Resource attributes: {}", request.getResource().getAttributesList());
-            }
+        try (final var unused = getProcessHistogram().createTimer()) {
+            requests.getResourceMetricsList().forEach(request -> {
+                if (log.isDebugEnabled()) {
+                    log.debug("Resource attributes: {}", request.getResource().getAttributesList());
+                }
 
-            final Map<String, String> nodeLabels =
-                request
-                    .getResource()
-                    .getAttributesList()
-                    .stream()
-                    .collect(toMap(
-                        it -> LABEL_MAPPINGS
-                            .getOrDefault(it.getKey(), it.getKey())
-                            .replaceAll("\\.", "_"),
-                        it -> it.getValue().getStringValue(),
-                        (v1, v2) -> v1
-                    ));
-
-            converters
-                .forEach(convert -> convert.toMeter(
+                final Map<String, String> nodeLabels =
                     request
-                        .getScopeMetricsList().stream()
-                        .flatMap(scopeMetrics -> scopeMetrics
-                            .getMetricsList().stream()
-                            .flatMap(metric -> adaptMetrics(nodeLabels, metric))
-                            .map(Function1.liftTry(Function.identity()))
-                            .flatMap(tryIt -> MetricConvert.log(
-                                tryIt,
-                                "Convert OTEL metric to prometheus metric"
-                            )))));
-        });
+                        .getResource()
+                        .getAttributesList()
+                        .stream()
+                        .collect(toMap(
+                            it -> LABEL_MAPPINGS
+                                .getOrDefault(it.getKey(), it.getKey())
+                                .replaceAll("\\.", "_"),
+                                it -> anyValueToString(it.getValue()),
+                        (v1, v2) -> v1
+                        ));
 
+                ImmutableMap<String, SampleFamily> sampleFamilies = PrometheusMetricConverter.convertPromMetricToSampleFamily(
+                    request.getScopeMetricsList().stream()
+                           .flatMap(scopeMetrics -> scopeMetrics
+                               .getMetricsList().stream()
+                               .flatMap(metric -> adaptMetrics(nodeLabels, metric))
+                               .map(Function1.liftTry(Function.identity()))
+                               .flatMap(tryIt -> MetricConvert.log(tryIt, "Convert OTEL metric to prometheus metric"))
+                           )
+                );
+                converters.forEach(convert -> convert.toMeter(sampleFamilies));
+            });
+        }
     }
 
     public void start() throws ModuleStartException {
@@ -127,7 +146,7 @@ public class OpenTelemetryMetricRequestProcessor implements Service {
 
         converters = rules
             .stream()
-            .map(r -> new PrometheusMetricConverter(r, meterSystem))
+            .map(r -> new MetricConvert(r, meterSystem))
             .collect(toList());
     }
 
@@ -136,7 +155,7 @@ public class OpenTelemetryMetricRequestProcessor implements Service {
             .stream()
             .collect(toMap(
                 KeyValue::getKey,
-                it -> it.getValue().getStringValue()
+                it -> anyValueToString(it.getValue())
             ));
     }
 
@@ -219,7 +238,8 @@ public class OpenTelemetryMetricRequestProcessor implements Service {
         final Map<String, String> nodeLabels,
         final io.opentelemetry.proto.metrics.v1.Metric metric) {
         if (metric.hasGauge()) {
-            return metric.getGauge().getDataPointsList().stream()
+            return metric.getGauge().getDataPointsList().stream().filter(point -> 
+                (point.getFlags() & DataPointFlags.FLAG_NO_RECORDED_VALUE_VALUE) != DataPointFlags.FLAG_NO_RECORDED_VALUE_VALUE)
                          .map(point -> new Gauge(
                              metric.getName(),
                              mergeLabels(
@@ -239,7 +259,8 @@ public class OpenTelemetryMetricRequestProcessor implements Service {
             }
             if (sum
                 .getAggregationTemporality() == AGGREGATION_TEMPORALITY_DELTA) {
-                return sum.getDataPointsList().stream()
+                return sum.getDataPointsList().stream().filter(point -> 
+                    (point.getFlags() & DataPointFlags.FLAG_NO_RECORDED_VALUE_VALUE) != DataPointFlags.FLAG_NO_RECORDED_VALUE_VALUE)
                           .map(point -> new Gauge(
                               metric.getName(),
                               mergeLabels(
@@ -252,7 +273,8 @@ public class OpenTelemetryMetricRequestProcessor implements Service {
                           ));
             }
             if (sum.getIsMonotonic()) {
-                return sum.getDataPointsList().stream()
+                return sum.getDataPointsList().stream().filter(point ->
+                    (point.getFlags() & DataPointFlags.FLAG_NO_RECORDED_VALUE_VALUE) != DataPointFlags.FLAG_NO_RECORDED_VALUE_VALUE)
                           .map(point -> new Counter(
                               metric.getName(),
                               mergeLabels(
@@ -264,7 +286,8 @@ public class OpenTelemetryMetricRequestProcessor implements Service {
                               point.getTimeUnixNano() / 1000000
                           ));
             } else {
-                return sum.getDataPointsList().stream()
+                return sum.getDataPointsList().stream().filter(point ->
+                    (point.getFlags() & DataPointFlags.FLAG_NO_RECORDED_VALUE_VALUE) != DataPointFlags.FLAG_NO_RECORDED_VALUE_VALUE)
                           .map(point -> new Gauge(
                               metric.getName(),
                               mergeLabels(
@@ -278,7 +301,8 @@ public class OpenTelemetryMetricRequestProcessor implements Service {
             }
         }
         if (metric.hasHistogram()) {
-            return metric.getHistogram().getDataPointsList().stream()
+            return metric.getHistogram().getDataPointsList().stream().filter(point ->
+                    (point.getFlags() & DataPointFlags.FLAG_NO_RECORDED_VALUE_VALUE) != DataPointFlags.FLAG_NO_RECORDED_VALUE_VALUE)
                          .map(point -> new Histogram(
                              metric.getName(),
                              mergeLabels(
@@ -295,7 +319,8 @@ public class OpenTelemetryMetricRequestProcessor implements Service {
                          ));
         }
         if (metric.hasExponentialHistogram()) {
-            return metric.getExponentialHistogram().getDataPointsList().stream()
+            return metric.getExponentialHistogram().getDataPointsList().stream().filter(point ->
+                    (point.getFlags() & DataPointFlags.FLAG_NO_RECORDED_VALUE_VALUE) != DataPointFlags.FLAG_NO_RECORDED_VALUE_VALUE)
                          .map(point -> new Histogram(
                              metric.getName(),
                              mergeLabels(
@@ -315,7 +340,8 @@ public class OpenTelemetryMetricRequestProcessor implements Service {
                          ));
         }
         if (metric.hasSummary()) {
-            return metric.getSummary().getDataPointsList().stream()
+            return metric.getSummary().getDataPointsList().stream().filter(point ->
+                    (point.getFlags() & DataPointFlags.FLAG_NO_RECORDED_VALUE_VALUE) != DataPointFlags.FLAG_NO_RECORDED_VALUE_VALUE)
                          .map(point -> new Summary(
                              metric.getName(),
                              mergeLabels(
@@ -334,4 +360,17 @@ public class OpenTelemetryMetricRequestProcessor implements Service {
         }
         throw new UnsupportedOperationException("Unsupported type");
     }
+
+    public static String anyValueToString(AnyValue value) {
+        if (value.hasBoolValue()) {
+            return Boolean.toString(value.getBoolValue());
+        } else if (value.hasIntValue()) {
+            return Long.toString(value.getIntValue());
+        } else if (value.hasDoubleValue()) {
+            return Double.toString(value.getDoubleValue());
+        } else {
+            return value.getStringValue();
+        }
+    }
+
 }

@@ -68,16 +68,15 @@ public class CoreModuleConfig extends ModuleConfig {
      * The time to live of all metrics data. Unit is day.
      */
 
-    private int metricsDataTTL = 3;
+    private int metricsDataTTL = 7;
     /**
      * The time to live of all record data, including tracing. Unit is Day.
      */
 
-    private int recordDataTTL = 7;
+    private int recordDataTTL = 3;
 
     private int gRPCThreadPoolSize;
 
-    private int gRPCThreadPoolQueueSize;
     /**
      * Timeout for cluster internal communication, in seconds.
      */
@@ -223,6 +222,28 @@ public class CoreModuleConfig extends ModuleConfig {
     @Setter
     @Getter
     private int serviceCacheRefreshInterval = 10;
+
+    /**
+     * If disable the hierarchy, the service and instance hierarchy relation will not be built.
+     * And the query of hierarchy will return empty result.
+     */
+    @Setter
+    @Getter
+    private boolean enableHierarchy = true;
+
+    /**
+     * The int value of the max heap memory usage percent.
+     * The default value is 96%.
+     */
+    @Getter
+    private long maxHeapMemoryUsagePercent = 96;
+
+    /**
+     * The long value of the max direct memory usage.
+     * The default max value is -1, representing no limit.
+     */
+    @Getter
+    private long maxDirectMemoryUsage = -1;
 
     public CoreModuleConfig() {
         this.downsampling = new ArrayList<>();

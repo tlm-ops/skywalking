@@ -37,7 +37,7 @@ import org.apache.skywalking.oap.server.core.storage.type.StorageBuilder;
 
 import java.util.List;
 
-import static org.apache.skywalking.oap.server.core.analysis.record.Record.TIME_BUCKET;
+import static org.apache.skywalking.oap.server.core.storage.StorageData.TIME_BUCKET;
 
 @SuperDataset
 @Stream(name = SegmentRecord.INDEX_NAME, scopeId = DefaultScopeDefine.SEGMENT, builder = SegmentRecord.Builder.class, processor = RecordStreamProcessor.class)
@@ -65,7 +65,6 @@ public class SegmentRecord extends Record {
     @Setter
     @Getter
     @Column(name = TRACE_ID, length = 150)
-    @BanyanDB.GlobalIndex
     @ElasticSearch.Routing
     private String traceId;
     @Setter
@@ -85,10 +84,14 @@ public class SegmentRecord extends Record {
     private String endpointId;
     @Setter
     @Getter
+    @ElasticSearch.EnableDocValues
     @Column(name = START_TIME)
+    @BanyanDB.NoIndexing
     private long startTime;
     @Setter
     @Getter
+    @ElasticSearch.EnableDocValues
+    @BanyanDB.EnableSort
     @Column(name = LATENCY)
     private int latency;
     @Setter

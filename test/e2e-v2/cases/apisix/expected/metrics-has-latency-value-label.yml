@@ -13,47 +13,213 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+debuggingtrace: null
 type: TIME_SERIES_VALUES
 results:
   {{- contains .results }}
 - metric:
     labels:
-      - key: _
-        value: "apisix:50"
+      - key: type
+        value: "apisix"
+      - key: p
+        value: "50"
   values:
     {{- contains .values }}
     - id: {{ notEmpty .id }}
       value: {{ .value }}
       traceid: null
+      owner: null
     - id: {{ notEmpty .id }}
       value: null
       traceid: null
+      owner: null
     {{- end}}
 - metric:
     labels:
-      - key: _
-        value: "apisix:99"
+      - key: type
+        value: "apisix"
+      - key: p
+        value: "70"
   values:
     {{- contains .values }}
     - id: {{ notEmpty .id }}
       value: {{ .value }}
       traceid: null
+      owner: null
     - id: {{ notEmpty .id }}
       value: null
       traceid: null
+      owner: null
     {{- end}}
 - metric:
     labels:
-      - key: _
-        value: "request:99"
+      - key: type
+        value: "apisix"
+      - key: p
+        value: "90"
   values:
     {{- contains .values }}
     - id: {{ notEmpty .id }}
       value: {{ .value }}
       traceid: null
+      owner: null
     - id: {{ notEmpty .id }}
       value: null
       traceid: null
+      owner: null
+    {{- end}}
+- metric:
+    labels:
+      - key: type
+        value: "apisix"
+      - key: p
+        value: "99"
+  values:
+    {{- contains .values }}
+    - id: {{ notEmpty .id }}
+      value: {{ .value }}
+      traceid: null
+      owner: null
+    - id: {{ notEmpty .id }}
+      value: null
+      traceid: null
+      owner: null
+    {{- end}}
+- metric:
+    labels:
+      - key: type
+        value: "request"
+      - key: p
+        value: "50"
+  values:
+    {{- contains .values }}
+    - id: {{ notEmpty .id }}
+      value: {{ .value }}
+      traceid: null
+      owner: null
+    - id: {{ notEmpty .id }}
+      value: null
+      traceid: null
+      owner: null
+    {{- end}}
+- metric:
+    labels:
+      - key: type
+        value: "request"
+      - key: p
+        value: "70"
+  values:
+    {{- contains .values }}
+    - id: {{ notEmpty .id }}
+      value: {{ .value }}
+      traceid: null
+      owner: null
+    - id: {{ notEmpty .id }}
+      value: null
+      traceid: null
+      owner: null
+    {{- end}}
+- metric:
+    labels:
+      - key: type
+        value: "request"
+      - key: p
+        value: "90"
+  values:
+    {{- contains .values }}
+    - id: {{ notEmpty .id }}
+      value: {{ .value }}
+      traceid: null
+      owner: null
+    - id: {{ notEmpty .id }}
+      value: null
+      traceid: null
+      owner: null
+    {{- end}}
+- metric:
+    labels:
+      - key: type
+        value: "request"
+      - key: p
+        value: "99"
+  values:
+    {{- contains .values }}
+    - id: {{ notEmpty .id }}
+      value: {{ .value }}
+      traceid: null
+      owner: null
+    - id: {{ notEmpty .id }}
+      value: null
+      traceid: null
+      owner: null
+    {{- end}}
+- metric:
+    labels:
+      - key: type
+        value: "upstream"
+      - key: p
+        value: "50"
+  values:
+    {{- contains .values }}
+    - id: {{ notEmpty .id }}
+      value: {{ .value }}
+      traceid: null
+      owner: null
+    - id: {{ notEmpty .id }}
+      value: null
+      traceid: null
+      owner: null
+    {{- end}}
+- metric:
+    labels:
+      - key: type
+        value: "upstream"
+      - key: p
+        value: "70"
+  values:
+    {{- contains .values }}
+    - id: {{ notEmpty .id }}
+      value: {{ .value }}
+      traceid: null
+      owner: null
+    - id: {{ notEmpty .id }}
+      value: null
+      traceid: null
+      owner: null
+    {{- end}}
+- metric:
+    labels:
+      - key: type
+        value: "upstream"
+      - key: p
+        value: "90"
+  values:
+    {{- contains .values }}
+    - id: {{ notEmpty .id }}
+      value: {{ .value }}
+      traceid: null
+      owner: null
+    - id: {{ notEmpty .id }}
+      value: null
+      traceid: null
+      owner: null
+    {{- end}}
+- metric:
+    labels:
+      - key: type
+        value: "upstream"
+      - key: p
+        value: "99"
+  values:
+    {{- contains .values }}
+    - id: {{ notEmpty .id }}
+      value: {{ .value }}
+      traceid: null
+      owner: null
+    - id: {{ notEmpty .id }}
+      value: null
+      traceid: null
+      owner: null
     {{- end}}
 {{- end}}
 error: null

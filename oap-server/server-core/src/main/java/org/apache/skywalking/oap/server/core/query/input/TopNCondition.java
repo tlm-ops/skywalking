@@ -18,8 +18,10 @@
 
 package org.apache.skywalking.oap.server.core.query.input;
 
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.apache.skywalking.oap.server.core.query.MetricsMetadataQueryService;
 import org.apache.skywalking.oap.server.core.query.enumeration.MetricsType;
 import org.apache.skywalking.oap.server.core.query.enumeration.Order;
@@ -33,6 +35,7 @@ import org.apache.skywalking.oap.server.core.storage.annotation.ValueColumnMetad
  */
 @Setter
 @Getter
+@ToString
 public class TopNCondition {
     /**
      * Metrics name
@@ -46,7 +49,7 @@ public class TopNCondition {
      * Normal service is the service having installed agent or metrics reported directly. Unnormal service is
      * conjectural service, usually detected by the agent.
      */
-    private boolean normal;
+    private Boolean normal;
     /**
      * Indicate the metrics entity scope. Because this is a top list, don't need to set the Entity like the
      * MetricsCondition. Only accept scope = {@link Scope#Service} {@link Scope#ServiceInstance} and {@link
@@ -55,6 +58,12 @@ public class TopNCondition {
     private Scope scope;
     private int topN;
     private Order order;
+    /**
+     * @since 10.2.0
+     * Attributes for query condition, if the metrics support attributes from
+     * {@link org.apache.skywalking.oap.server.core.analysis.ISourceDecorator}.
+     */
+    private List<AttrCondition> attributes;
 
     /**
      * Sense Scope through metric name.

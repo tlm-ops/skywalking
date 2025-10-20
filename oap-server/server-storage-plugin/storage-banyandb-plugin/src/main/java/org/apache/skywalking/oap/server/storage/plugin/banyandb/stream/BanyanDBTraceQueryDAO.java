@@ -18,6 +18,7 @@
 
 package org.apache.skywalking.oap.server.storage.plugin.banyandb.stream;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import org.apache.skywalking.banyandb.v1.client.AbstractQuery;
 import org.apache.skywalking.banyandb.v1.client.Element;
@@ -70,9 +71,11 @@ public class BanyanDBTraceQueryDAO extends AbstractBanyanDBDAO implements ITrace
             SegmentRecord.START_TIME,
             SegmentRecord.SEGMENT_ID,
             SegmentRecord.DATA_BINARY);
+    private final int segmentQueryMaxSize;
 
-    public BanyanDBTraceQueryDAO(BanyanDBStorageClient client) {
+    public BanyanDBTraceQueryDAO(BanyanDBStorageClient client, int segmentQueryMaxSize) {
         super(client);
+        this.segmentQueryMaxSize = segmentQueryMaxSize;
     }
 
     @Override
@@ -107,6 +110,10 @@ public class BanyanDBTraceQueryDAO extends AbstractBanyanDBDAO implements ITrace
                     query.and(eq(SegmentRecord.ENDPOINT_ID, endpointId));
                 }
 
+                if (!Strings.isNullOrEmpty(traceId)) {
+                    query.and(eq(SegmentRecord.TRACE_ID, traceId));
+                }
+
                 switch (traceState) {
                     case ERROR:
                         query.and(eq(SegmentRecord.IS_ERROR, BooleanUtils.TRUE));
@@ -118,7 +125,7 @@ public class BanyanDBTraceQueryDAO extends AbstractBanyanDBDAO implements ITrace
 
                 switch (queryOrder) {
                     case BY_START_TIME:
-                        query.setOrderBy(new StreamQuery.OrderBy(SegmentRecord.START_TIME, AbstractQuery.Sort.DESC));
+                        query.setOrderBy(new StreamQuery.OrderBy(AbstractQuery.Sort.DESC));
                         break;
                     case BY_DURATION:
                         query.setOrderBy(new StreamQuery.OrderBy(SegmentRecord.LATENCY, AbstractQuery.Sort.DESC));
@@ -144,7 +151,7 @@ public class BanyanDBTraceQueryDAO extends AbstractBanyanDBDAO implements ITrace
             tsRange = new TimestampRange(TimeBucket.getTimestamp(startSecondTB), TimeBucket.getTimestamp(endSecondTB));
         }
 
-        StreamQueryResponse resp = query(SegmentRecord.INDEX_NAME,
+        StreamQueryResponse resp = queryDebuggable(SegmentRecord.INDEX_NAME,
                 BASIC_TAGS,
                 tsRange, q);
 
@@ -176,11 +183,12 @@ public class BanyanDBTraceQueryDAO extends AbstractBanyanDBDAO implements ITrace
 
     @Override
     public List<SegmentRecord> queryByTraceId(String traceId) throws IOException {
-        StreamQueryResponse resp = query(SegmentRecord.INDEX_NAME, TAGS,
+        StreamQueryResponse resp = queryDebuggable(SegmentRecord.INDEX_NAME, TAGS, null,
                 new QueryBuilder<StreamQuery>() {
                     @Override
                     public void apply(StreamQuery query) {
                         query.and(eq(SegmentRecord.TRACE_ID, traceId));
+                        query.setLimit(segmentQueryMaxSize);
                     }
                 });
         return buildRecords(resp);
@@ -193,6 +201,7 @@ public class BanyanDBTraceQueryDAO extends AbstractBanyanDBDAO implements ITrace
                 @Override
                 public void apply(StreamQuery query) {
                     query.and(in(SegmentRecord.SEGMENT_ID, segmentIdList));
+                    query.setLimit(segmentQueryMaxSize);
                 }
             });
         return buildRecords(resp);
@@ -206,6 +215,7 @@ public class BanyanDBTraceQueryDAO extends AbstractBanyanDBDAO implements ITrace
                 public void apply(StreamQuery query) {
                     query.and(in(SegmentRecord.TRACE_ID, traceIdList));
                     query.and(in(SegmentRecord.SERVICE_INSTANCE_ID, instanceIdList));
+                    query.setLimit(segmentQueryMaxSize);
                 }
             });
         return buildRecords(resp);

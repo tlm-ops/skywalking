@@ -20,7 +20,7 @@ package org.apache.skywalking.mqe.rt.operation;
 
 import org.apache.skywalking.mqe.rt.exception.IllegalExpressionException;
 import org.apache.skywalking.mqe.rt.grammar.MQEParser;
-import org.apache.skywalking.mqe.rt.type.ExpressionResult;
+import org.apache.skywalking.oap.server.core.query.mqe.ExpressionResult;
 
 public class BinaryOp {
     public static ExpressionResult doBinaryOp(ExpressionResult left,
@@ -29,7 +29,7 @@ public class BinaryOp {
         try {
             return LROp.doLROp(left, right, opType, BinaryOp::scalarBinaryOp);
         } catch (IllegalExpressionException e) {
-            throw new IllegalExpressionException("Unsupported binary operation.");
+            throw new IllegalExpressionException("Unsupported binary operation: " + e.getMessage());
         }
     }
 

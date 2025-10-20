@@ -13,33 +13,38 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+debuggingtrace: null
 type: TIME_SERIES_VALUES
 results:
   {{- contains .results }}
   - metric:
       labels:
-        - key: _
+        - key: mountpoint
           value: "/etc/hosts"
     values:
       {{- contains .values }}
       - id: {{ notEmpty .id }}
         value: {{ .value }}
+        owner: null
         traceid: null
       - id: {{ notEmpty .id }}
         value: null
+        owner: null
         traceid: null
       {{- end}}
   - metric:
       labels:
-        - key: _
+        - key: mountpoint
           value: "/etc/hostname"
     values:
       {{- contains .values }}
       - id: {{ notEmpty .id }}
         value: {{ .value }}
+        owner: null
         traceid: null
       - id: {{ notEmpty .id }}
         value: null
+        owner: null
         traceid: null
       {{- end}}
   {{- end}}

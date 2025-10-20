@@ -22,12 +22,19 @@ import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.skywalking.library.elasticsearch.requests.search.BoolQueryBuilder;
 import org.apache.skywalking.library.elasticsearch.requests.search.Query;
 import org.apache.skywalking.library.elasticsearch.requests.search.RangeQueryBuilder;
 import org.apache.skywalking.library.elasticsearch.requests.search.Search;
 import org.apache.skywalking.library.elasticsearch.requests.search.SearchBuilder;
+import org.apache.skywalking.library.elasticsearch.requests.search.Sort;
 import org.apache.skywalking.library.elasticsearch.response.search.SearchHit;
 import org.apache.skywalking.library.elasticsearch.response.search.SearchResponse;
 import org.apache.skywalking.oap.server.core.analysis.IDManager;
@@ -55,12 +62,6 @@ import org.apache.skywalking.oap.server.storage.plugin.elasticsearch.base.Elasti
 import org.apache.skywalking.oap.server.storage.plugin.elasticsearch.base.EsDAO;
 import org.apache.skywalking.oap.server.storage.plugin.elasticsearch.base.IndexController;
 import org.apache.skywalking.oap.server.storage.plugin.elasticsearch.base.MatchCNameBuilder;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static org.apache.skywalking.oap.server.core.analysis.manual.instance.InstanceTraffic.PropertyUtil.LANGUAGE;
 
@@ -148,18 +149,20 @@ public class MetadataQueryEsDAO extends EsDAO implements IMetadataQueryDAO {
     }
 
     @Override
-    public List<ServiceInstance> listInstances(Duration duration,
+    public List<ServiceInstance> listInstances(@Nullable Duration duration,
                                                String serviceId) {
         final String index =
             IndexController.LogicIndicesRegister.getPhysicalTableName(InstanceTraffic.INDEX_NAME);
 
-        final long startMinuteTimeBucket = TimeBucket.getMinuteTimeBucket(duration.getStartTimestamp());
-        final long endMinuteTimeBucket = TimeBucket.getMinuteTimeBucket(duration.getEndTimestamp());
         final BoolQueryBuilder query =
             Query.bool()
-                 .must(Query.range(InstanceTraffic.LAST_PING_TIME_BUCKET).gte(startMinuteTimeBucket))
-                 .must(Query.range(InstanceTraffic.TIME_BUCKET).lt(endMinuteTimeBucket))
                  .must(Query.term(InstanceTraffic.SERVICE_ID, serviceId));
+        if (duration != null) {
+            final long startMinuteTimeBucket = TimeBucket.getMinuteTimeBucket(duration.getStartTimestamp());
+            final long endMinuteTimeBucket = TimeBucket.getMinuteTimeBucket(duration.getEndTimestamp());
+            query.must(Query.range(InstanceTraffic.LAST_PING_TIME_BUCKET).gte(startMinuteTimeBucket))
+                 .must(Query.range(InstanceTraffic.TIME_BUCKET).lt(endMinuteTimeBucket));
+        }
         if (IndexController.LogicIndicesRegister.isMergedTable(InstanceTraffic.INDEX_NAME)) {
             query.must(Query.term(IndexController.LogicIndicesRegister.METRIC_TABLE_NAME, InstanceTraffic.INDEX_NAME));
         }
@@ -213,7 +216,7 @@ public class MetadataQueryEsDAO extends EsDAO implements IMetadataQueryDAO {
     }
 
     @Override
-    public List<Endpoint> findEndpoint(String keyword, String serviceId, int limit) {
+    public List<Endpoint> findEndpoint(String keyword, String serviceId, int limit, Duration duration) {
         initColumnName();
         final String index = IndexController.LogicIndicesRegister.getPhysicalTableName(
             EndpointTraffic.INDEX_NAME);
@@ -231,14 +234,23 @@ public class MetadataQueryEsDAO extends EsDAO implements IMetadataQueryDAO {
             query.must(Query.term(IndexController.LogicIndicesRegister.METRIC_TABLE_NAME, EndpointTraffic.INDEX_NAME));
         }
 
-        final var search = Search.builder().query(query).size(limit);
+        if (duration != null) {
+            final long startMinuteTimeBucket = TimeBucket.getMinuteTimeBucket(duration.getStartTimestamp());
+            final long endMinuteTimeBucket = TimeBucket.getMinuteTimeBucket(duration.getEndTimestamp());
+            query.must(Query.range(EndpointTraffic.LAST_PING_TIME_BUCKET).gte(startMinuteTimeBucket).lte(endMinuteTimeBucket));
+        }
+
+        final var search = Search.builder().query(query).size(limit).sort(
+            EndpointTraffic.TIME_BUCKET,
+            Sort.Order.DESC
+        );
 
         final var scroller = ElasticSearchScroller
             .<Endpoint>builder()
             .client(getClient())
             .search(search.build())
             .index(index)
-            .queryMaxSize(queryMaxSize)
+            .queryMaxSize(limit)
             .resultConverter(searchHit -> {
                 final var sourceAsMap = searchHit.getSource();
 
@@ -304,7 +316,7 @@ public class MetadataQueryEsDAO extends EsDAO implements IMetadataQueryDAO {
     }
 
     @Override
-    public List<Process> listProcesses(String agentId) {
+    public List<Process> listProcesses(String agentId, long startPingTimeBucket, long endPingTimeBucket) {
         final String index =
             IndexController.LogicIndicesRegister.getPhysicalTableName(ProcessTraffic.INDEX_NAME);
 
@@ -313,7 +325,8 @@ public class MetadataQueryEsDAO extends EsDAO implements IMetadataQueryDAO {
             query.must(Query.term(IndexController.LogicIndicesRegister.METRIC_TABLE_NAME, ProcessTraffic.INDEX_NAME));
         }
         final SearchBuilder search = Search.builder().query(query).size(queryMaxSize);
-        appendProcessWhereQuery(query, null, null, agentId, null, 0, 0, false);
+        appendProcessWhereQuery(query, null, null, agentId, null,
+            startPingTimeBucket, endPingTimeBucket, false);
 
         final var scroller = ElasticSearchScroller
             .<Process>builder()
@@ -402,14 +415,6 @@ public class MetadataQueryEsDAO extends EsDAO implements IMetadataQueryDAO {
             return buildProcess(iterator.next());
         }
         return null;
-    }
-
-    private List<Service> buildServices(SearchResponse response) {
-        List<Service> services = new ArrayList<>();
-        for (SearchHit hit : response.getHits()) {
-            services.add(searchHitServiceFunction.apply(hit));
-        }
-        return services;
     }
 
     private List<ServiceInstance> buildInstances(SearchResponse response) {

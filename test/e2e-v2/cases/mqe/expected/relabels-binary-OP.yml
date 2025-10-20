@@ -13,47 +13,54 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+debuggingtrace: null
 type: TIME_SERIES_VALUES
 results:
 {{- contains .results }}
   - metric:
       labels:
-        - key: _
+        - key: p
           value: "P50"
     values:
       {{- contains .values }}
       - id: {{ notEmpty .id }}
         value: "1"
         traceid: null
+        owner: null
       - id: {{ notEmpty .id }}
         value: null
         traceid: null
+        owner: null
       {{- end}}
   - metric:
       labels:
-        - key: _
-          value: "P75"
+        - key: p
+          value: "75"
     values:
       {{- contains .values }}
       - id: {{ notEmpty .id }}
         value: "1"
         traceid: null
+        owner: null
       - id: {{ notEmpty .id }}
         value: null
         traceid: null
+        owner: null
       {{- end}}
   - metric:
       labels:
-        - key: _
-          value: "P90"
+        - key: p
+          value: "90"
     values:
       {{- contains .values }}
       - id: {{ notEmpty .id }}
         value: "1"
         traceid: null
+        owner: null
       - id: {{ notEmpty .id }}
         value: null
         traceid: null
+        owner: null
       {{- end}}
 {{- end}}
 error: null

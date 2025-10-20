@@ -56,7 +56,10 @@ public enum Layer {
 
     /**
      * Function as a Service
+     *
+     * Deprecated since 9.7.0. OpenFunction relative features are not maintained anymore.
      */
+    @Deprecated
     FAAS(5, true),
 
     /**
@@ -188,7 +191,67 @@ public enum Layer {
     /**
      * MongoDB is a document database. It stores data in a type of JSON format called BSON.
      */
-    MONGODB(30, true);
+    MONGODB(30, true),
+
+    /**
+     * Kafka is a distributed streaming platform that is used publish and subscribe to streams of records.
+     */
+    KAFKA(31, true),
+
+    /**
+     * Pulsar is a distributed pub-sub messaging platform that provides high-performance, durable messaging.
+     * It is used to publish and subscribe to streams of records.
+     * Pulsar supports scalable and fault-tolerant messaging, making it suitable for use in distributed systems.
+     */
+    PULSAR(32, true),
+
+    /**
+     * A scalable, fault-tolerant, and low-latency storage service optimized for real-time workloads.
+     */
+    BOOKKEEPER(33, true),
+
+    /**
+     * Nginx is an HTTP and reverse proxy server, a mail proxy server, and a generic TCP/UDP proxy server.
+     */
+    NGINX(34, true),
+
+    /**
+     * A cloud native messaging and streaming platform, making it simple to build event-driven applications.
+     */
+    ROCKETMQ(35, true),
+
+    /**
+     * A high-performance, column-oriented SQL database management system (DBMS) for online analytical processing (OLAP).
+     */
+    CLICKHOUSE(36, true),
+
+    /**
+     *  ActiveMQ is a popular open source, multi-protocol, Java-based message broker.
+     */
+    ACTIVEMQ(37, true),
+
+    /**
+     * Cilium is open source software for providing and transparently securing network connectivity and load balancing
+     * between application workloads such as application containers or processes.
+     */
+    CILIUM_SERVICE(38, true),
+
+    /**
+     * The self observability of SkyWalking Java Agent,
+     * which provides the abilities to measure the tracing performance and error statistics of plugins.
+     */
+    SO11Y_JAVA_AGENT(39, true),
+
+    /**
+     * Kong is Cloud-Native API Gateway and AI Gateway.
+     */
+    KONG(40, true),
+
+    /**
+     * The self observability of SkyWalking Go Agent,
+     * which provides the abilities to measure the tracing performance and error statistics of plugins.
+     */
+    SO11Y_GO_AGENT(41, true);
 
     private final int value;
     /**

@@ -21,7 +21,6 @@ package org.apache.skywalking.oap.server.core.alarm.provider;
 import org.apache.skywalking.mqe.rt.exception.IllegalExpressionException;
 import org.apache.skywalking.oap.server.configuration.api.ConfigChangeWatcher;
 import org.apache.skywalking.oap.server.core.query.enumeration.Scope;
-import org.apache.skywalking.oap.server.core.query.sql.Function;
 import org.apache.skywalking.oap.server.core.storage.annotation.Column;
 import org.apache.skywalking.oap.server.core.storage.annotation.ValueColumnMetadata;
 import org.apache.skywalking.oap.server.library.util.CollectionUtils;
@@ -46,15 +45,15 @@ import static org.mockito.Mockito.spy;
 
 public class AlarmRulesWatcherTest {
     @Spy
-    private AlarmRulesWatcher alarmRulesWatcher = new AlarmRulesWatcher(new Rules(), null);
+    private AlarmRulesWatcher alarmRulesWatcher = new AlarmRulesWatcher(new Rules(), null, null);
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         ValueColumnMetadata.INSTANCE.putIfAbsent(
-            "service_percent", "testColumn", Column.ValueDataType.COMMON_VALUE, Function.Avg, 0, Scope.Service.getScopeId());
+            "service_percent", "testColumn", Column.ValueDataType.COMMON_VALUE, 0, Scope.Service.getScopeId());
         ValueColumnMetadata.INSTANCE.putIfAbsent(
-            "endpoint_percent", "testColumn", Column.ValueDataType.COMMON_VALUE, Function.Avg, 0, Scope.Endpoint.getScopeId());
+            "endpoint_percent", "testColumn", Column.ValueDataType.COMMON_VALUE, 0, Scope.Endpoint.getScopeId());
     }
 
     @Test
@@ -81,9 +80,9 @@ public class AlarmRulesWatcherTest {
     @Test
     public void shouldClearAlarmRulesOnEventDeleted() throws IOException {
         Reader reader = ResourceUtils.read("alarm-settings.yml");
-        Rules defaultRules = new RulesReader(reader).readRules();
+        Rules defaultRules = new RulesReader(reader, null).readRules();
 
-        alarmRulesWatcher = spy(new AlarmRulesWatcher(defaultRules, null));
+        alarmRulesWatcher = spy(new AlarmRulesWatcher(defaultRules, null, null));
 
         alarmRulesWatcher.notify(new ConfigChangeWatcher.ConfigChangeEvent("whatever", ConfigChangeWatcher.EventType.DELETE));
 
@@ -99,7 +98,7 @@ public class AlarmRulesWatcherTest {
         Rules rules = new Rules();
         rules.getRules().add(rule);
 
-        alarmRulesWatcher = spy(new AlarmRulesWatcher(rules, null));
+        alarmRulesWatcher = spy(new AlarmRulesWatcher(rules, null, null));
         assertEquals(1, alarmRulesWatcher.getRunningContext().size());
         assertEquals(1, alarmRulesWatcher.getRunningContext().get(rule.getExpression()).size());
 
@@ -123,7 +122,7 @@ public class AlarmRulesWatcherTest {
         Rules rules = new Rules();
         rules.getRules().add(rule);
 
-        alarmRulesWatcher = spy(new AlarmRulesWatcher(rules, null));
+        alarmRulesWatcher = spy(new AlarmRulesWatcher(rules, null, null));
         assertEquals(1, alarmRulesWatcher.getRunningContext().size());
         assertEquals(1, alarmRulesWatcher.getRunningContext().get(rule.getExpression()).size());
 
@@ -147,7 +146,7 @@ public class AlarmRulesWatcherTest {
         Rules rules = new Rules();
         rules.getRules().add(rule);
 
-        alarmRulesWatcher = spy(new AlarmRulesWatcher(rules, null));
+        alarmRulesWatcher = spy(new AlarmRulesWatcher(rules, null, null));
         assertEquals(1, alarmRulesWatcher.getRunningContext().size());
         assertEquals(1, alarmRulesWatcher.getRunningContext().get(rule.getExpression()).size());
 
@@ -168,7 +167,7 @@ public class AlarmRulesWatcherTest {
     }
 
     private AlarmRule newAlarmRule(String name, String expression) throws IllegalExpressionException {
-       AlarmRule alarmRule = new AlarmRule();
+       AlarmRule alarmRule = new AlarmRule(null);
         alarmRule.setAlarmRuleName(name);
         alarmRule.setIncludeNames(new ArrayList<String>() {
             {

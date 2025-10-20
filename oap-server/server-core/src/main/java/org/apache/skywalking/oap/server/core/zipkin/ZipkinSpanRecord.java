@@ -45,7 +45,7 @@ import zipkin2.Span;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.skywalking.oap.server.core.analysis.record.Record.TIME_BUCKET;
+import static org.apache.skywalking.oap.server.core.storage.StorageData.TIME_BUCKET;
 
 @SuperDataset
 @Stream(name = ZipkinSpanRecord.INDEX_NAME, scopeId = DefaultScopeDefine.ZIPKIN_SPAN, builder = ZipkinSpanRecord.Builder.class, processor = RecordStreamProcessor.class)
@@ -82,13 +82,12 @@ public class ZipkinSpanRecord extends Record {
     @Getter
     @Column(name = TRACE_ID)
     @SQLDatabase.AdditionalEntity(additionalTables = {ADDITIONAL_QUERY_TABLE}, reserveOriginalColumns = true)
-    @BanyanDB.SeriesID(index = 0)
     @ElasticSearch.Routing
+    @ElasticSearch.EnableDocValues
     private String traceId;
     @Setter
     @Getter
     @Column(name = SPAN_ID)
-    @BanyanDB.SeriesID(index = 1)
     private String spanId;
     @Setter
     @Getter
@@ -108,14 +107,18 @@ public class ZipkinSpanRecord extends Record {
     private String kind;
     @Setter
     @Getter
+    @ElasticSearch.EnableDocValues
     @Column(name = TIMESTAMP_MILLIS)
+    @BanyanDB.NoIndexing
     private long timestampMillis;
     @Setter
     @Getter
     @Column(name = TIMESTAMP)
+    @BanyanDB.NoIndexing
     private long timestamp;
     @Setter
     @Getter
+    @BanyanDB.SeriesID(index = 0)
     @Column(name = LOCAL_ENDPOINT_SERVICE_NAME)
     private String localEndpointServiceName;
     @Setter
@@ -281,7 +284,7 @@ public class ZipkinSpanRecord extends Record {
         //Build remoteEndpoint
         Endpoint.Builder remoteEndpoint = Endpoint.newBuilder();
         remoteEndpoint.serviceName(record.getRemoteEndpointServiceName());
-        if (!StringUtil.isEmpty(record.getLocalEndpointIPV4())) {
+        if (!StringUtil.isEmpty(record.getRemoteEndpointIPV4())) {
             remoteEndpoint.parseIp(record.getRemoteEndpointIPV4());
         } else {
             remoteEndpoint.parseIp(record.getRemoteEndpointIPV6());

@@ -25,7 +25,9 @@ import org.apache.skywalking.oap.server.core.analysis.TimeBucket;
 import org.apache.skywalking.oap.server.core.remote.data.StreamData;
 import org.apache.skywalking.oap.server.core.storage.StorageData;
 import org.apache.skywalking.oap.server.core.storage.StorageID;
+import org.apache.skywalking.oap.server.core.storage.annotation.BanyanDB;
 import org.apache.skywalking.oap.server.core.storage.annotation.Column;
+import org.apache.skywalking.oap.server.core.storage.annotation.ElasticSearch;
 
 /**
  * Metrics represents the statistic data, which analysis by OAL script or hard code. It has the lifecycle controlled by
@@ -33,7 +35,7 @@ import org.apache.skywalking.oap.server.core.storage.annotation.Column;
  */
 @EqualsAndHashCode(of = {
     "timeBucket"
-})
+}, callSuper = false)
 public abstract class Metrics extends StreamData implements StorageData {
     public static final String ENTITY_ID = "entity_id";
     public static final String ID = "id";
@@ -44,11 +46,13 @@ public abstract class Metrics extends StreamData implements StorageData {
     @Getter
     @Setter
     @Column(name = TIME_BUCKET)
+    @ElasticSearch.EnableDocValues
     private long timeBucket;
 
     /**
      * The last update timestamp of the cache.
-     * The `update` means it is combined with the new metrics. This update doesn't mean the database level update ultimately.
+     * The `update` means it is combined with the new metrics. This update doesn't mean the database level update
+     * ultimately.
      */
     @Getter
     private long lastUpdateTimestamp = 0L;
@@ -153,5 +157,11 @@ public abstract class Metrics extends StreamData implements StorageData {
         return id;
     }
 
+    /**
+     * @return {@link StorageID} of this metrics to represent the unique identity in storage.
+     * This ID doesn't have to match the physical storage primary key.
+     * The storage could pick another way to indicate the unique identity, such as BanyanDB is using
+     * {@link BanyanDB.SeriesID}
+     */
     protected abstract StorageID id0();
 }

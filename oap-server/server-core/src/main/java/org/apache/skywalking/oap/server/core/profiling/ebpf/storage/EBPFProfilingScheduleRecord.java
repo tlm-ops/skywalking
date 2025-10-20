@@ -29,6 +29,7 @@ import org.apache.skywalking.oap.server.core.remote.grpc.proto.RemoteData;
 import org.apache.skywalking.oap.server.core.storage.StorageID;
 import org.apache.skywalking.oap.server.core.storage.annotation.BanyanDB;
 import org.apache.skywalking.oap.server.core.storage.annotation.Column;
+import org.apache.skywalking.oap.server.core.storage.annotation.ElasticSearch;
 import org.apache.skywalking.oap.server.core.storage.type.Convert2Entity;
 import org.apache.skywalking.oap.server.core.storage.type.Convert2Storage;
 import org.apache.skywalking.oap.server.core.storage.type.StorageBuilder;
@@ -50,6 +51,7 @@ import static org.apache.skywalking.oap.server.core.source.DefaultScopeDefine.EB
     "processId",
     "startTime",
 })
+@BanyanDB.IndexMode
 public class EBPFProfilingScheduleRecord extends Metrics {
 
     public static final String INDEX_NAME = "ebpf_profiling_schedule";
@@ -60,15 +62,18 @@ public class EBPFProfilingScheduleRecord extends Metrics {
     public static final String EBPF_PROFILING_SCHEDULE_ID = "ebpf_profiling_schedule_id";
 
     @Column(name = TASK_ID)
+    @BanyanDB.SeriesID(index = 0)
     private String taskId;
     @Column(name = PROCESS_ID, length = 600)
     private String processId;
+    @ElasticSearch.EnableDocValues
+    @BanyanDB.EnableSort
     @Column(name = START_TIME)
     private long startTime;
     @Column(name = END_TIME)
     private long endTime;
     @Column(name = EBPF_PROFILING_SCHEDULE_ID)
-    @BanyanDB.SeriesID(index = 0)
+    @BanyanDB.SeriesID(index = 1)
     private String scheduleId;
 
     @Override
@@ -96,7 +101,7 @@ public class EBPFProfilingScheduleRecord extends Metrics {
 
     @Override
     protected StorageID id0() {
-        return new StorageID().append(EBPF_PROFILING_SCHEDULE_ID, scheduleId);
+        return new StorageID().append(TASK_ID, taskId).append(EBPF_PROFILING_SCHEDULE_ID, scheduleId);
     }
 
     @Override

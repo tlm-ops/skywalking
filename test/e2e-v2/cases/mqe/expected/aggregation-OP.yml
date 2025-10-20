@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+debuggingtrace: null
 type: SINGLE_VALUE
 results:
   - metric:
@@ -21,4 +22,5 @@ results:
       - id: null
         value: "100"
         traceid: null
+        owner: null
 error: null

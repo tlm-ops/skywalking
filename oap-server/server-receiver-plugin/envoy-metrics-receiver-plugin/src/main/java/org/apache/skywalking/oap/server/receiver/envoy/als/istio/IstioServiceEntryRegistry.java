@@ -58,6 +58,8 @@ public class IstioServiceEntryRegistry {
 
         serviceNameFormatter = new ServiceNameFormatter(config.getIstioServiceNameRule());
 
+        final var ignoredNamespaces = config.getIstioServiceEntryIgnoredNamespaces();
+
         final var cacheBuilder = CacheBuilder.newBuilder().expireAfterWrite(Duration.ofMinutes(3));
 
         ipServiceMetaInfoMap = cacheBuilder.build(new CacheLoader<>() {
@@ -69,8 +71,13 @@ public class IstioServiceEntryRegistry {
                     .parallelStream()
                     .filter(se -> se.getMetadata() != null)
                     .filter(se -> se.getSpec() != null)
+                    .filter(se -> !ignoredNamespaces.contains(se.getMetadata().getNamespace()))
                     .filter(se -> {
                         final var spec = se.getSpec();
+                        if (spec.getResolution() == null) {
+                            log.debug("Unsupported service entry resolution: {}", spec.getResolution());
+                            return false;
+                        }
                         switch (spec.getResolution()) {
                             case STATIC:
                                 return spec

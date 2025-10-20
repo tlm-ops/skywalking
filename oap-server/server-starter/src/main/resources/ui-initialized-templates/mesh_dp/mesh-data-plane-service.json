@@ -37,21 +37,15 @@
                       "label": "Bug Failures"
                     }
                   ],
-                  "metricMode": "Expression",
                   "expressions": [
+                    "avg(envoy_total_connections_used)",
+                    "avg(envoy_worker_threads)",
+                    "avg(envoy_bug_failures)"
+                  ],
+                  "subExpressions": [
                     "envoy_total_connections_used",
                     "envoy_worker_threads",
                     "envoy_bug_failures"
-                  ],
-                  "subExpressions": [
-                    "",
-                    "",
-                    ""
-                  ],
-                  "subTypesOfMQE": [
-                    "",
-                    "",
-                    ""
                   ]
                 }
               ]
@@ -67,8 +61,8 @@
                   "i": "2",
                   "type": "Text",
                   "graph": {
-                    "fontColor": "white",
-                    "backgroundColor": "blue",
+                    "fontColor": "theme",
+                    "backgroundColor": "theme",
                     "content": "eBPF Profiling support services written in C, C++, Golang, and Rust. SkyWalking Rover provides this profiling capability. ",
                     "fontSize": 14,
                     "textAlign": "left",
@@ -92,7 +86,8 @@
       "entity": "Service",
       "name": "Mesh-Data-Plane-Service",
       "id": "Mesh-Data-Plane-Service",
-      "isRoot": false
+      "isRoot": false,
+      "isDefault": true
     }
   }
 ]

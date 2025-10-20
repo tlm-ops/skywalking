@@ -19,19 +19,21 @@
 package org.apache.skywalking.mqe.rt.operation;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.apache.skywalking.mqe.rt.exception.IllegalExpressionException;
-import org.apache.skywalking.mqe.rt.type.ExpressionResult;
-import org.apache.skywalking.mqe.rt.type.ExpressionResultType;
-import org.apache.skywalking.mqe.rt.type.MQEValue;
-import org.apache.skywalking.mqe.rt.type.MQEValues;
+import org.apache.skywalking.oap.server.core.query.mqe.ExpressionResult;
+import org.apache.skywalking.oap.server.core.query.mqe.ExpressionResultType;
+import org.apache.skywalking.oap.server.core.query.mqe.MQEValue;
+import org.apache.skywalking.oap.server.core.query.mqe.MQEValues;
 import org.apache.skywalking.oap.server.core.query.type.KeyValue;
 
 @FunctionalInterface
 public interface LROp {
 
-    double apply(double left, double right, int opType);
+    double apply(double left, double right, int opType) throws IllegalExpressionException;
 
     static ExpressionResult doLROp(ExpressionResult left,
                                           ExpressionResult right,
@@ -89,7 +91,17 @@ public interface LROp {
 
     private static ExpressionResult single2SingleNoLabeled(ExpressionResult singleLeft,
                                                           ExpressionResult singleRight,
-                                                          int opType, LROp calculate) {
+                                                          int opType, LROp calculate) throws IllegalExpressionException {
+        if (singleLeft.getResults().isEmpty() ||
+            singleLeft.getResults().get(0).getValues().size() != 1) {
+            throw new IllegalExpressionException("Single to Single, left result is empty or has more than one value.");
+        }
+
+        if (singleRight.getResults().isEmpty() ||
+            singleRight.getResults().get(0).getValues().size() != 1) {
+            throw new IllegalExpressionException("Single to Single, right result is empty or has more than one value.");
+        }
+
         ExpressionResult result = new ExpressionResult();
         MQEValue mqeValue = new MQEValue();
         MQEValues mqeValues = new MQEValues();
@@ -105,7 +117,6 @@ public interface LROp {
         } else {
             double value = calculate.apply(left.getDoubleValue(), right.getDoubleValue(), opType);
             mqeValue.setDoubleValue(value);
-            mqeValue.setEmptyValue(false);
         }
         return result;
     }
@@ -113,31 +124,30 @@ public interface LROp {
     private static ExpressionResult single2SingleLabeled(ExpressionResult singleLeft,
                                                            ExpressionResult singleRight,
                                                            int opType, LROp calculate) throws IllegalExpressionException {
-        Map<KeyValue, List<MQEValue>> labelMapR = new HashMap<>();
-        if (singleLeft.getResults().size() != singleRight.getResults().size()) {
-            throw new IllegalExpressionException(
-                "Operation between labeled metrics should have the same label.");
-        }
+        Map<Set<KeyValue>, List<MQEValue>> labelMapR = new HashMap<>();
         singleRight.getResults().forEach(mqeValuesR -> {
-            // For now, we only have a single anonymous label named `_`
-            labelMapR.put(mqeValuesR.getMetric().getLabels().get(0), mqeValuesR.getValues());
+            labelMapR.put(new HashSet<>(mqeValuesR.getMetric().getLabels()), mqeValuesR.getValues());
         });
         for (MQEValues mqeValuesL : singleLeft.getResults()) {
+            if (mqeValuesL.getValues().size() != 1) {
+                throw new IllegalExpressionException("Single Labeled to Single Labeled, left labeled result is empty or has more than one value.");
+            }
             //reserve left metric info
             MQEValue valueL = mqeValuesL.getValues().get(0);
-            List<MQEValue> mqeValuesR = labelMapR.get(mqeValuesL.getMetric().getLabels().get(0));
+            List<MQEValue> mqeValuesR = labelMapR.get(new HashSet<>(mqeValuesL.getMetric().getLabels()));
             if (mqeValuesR == null) {
-                throw new IllegalExpressionException(
-                    "Operation between labeled metrics should have the same label.");
-            }
-            MQEValue valueR = mqeValuesR.get(0);
-            if (valueL.isEmptyValue() || valueR.isEmptyValue()) {
                 valueL.setEmptyValue(true);
-                valueL.setDoubleValue(0);
             } else {
+                if (mqeValuesR.size() != 1) {
+                    throw new IllegalExpressionException("Single Labeled to Single Labeled, right labeled result has more than one value.");
+                }
+                MQEValue valueR = mqeValuesR.get(0);
+                if (valueL.isEmptyValue() || valueR.isEmptyValue()) {
+                    valueL.setEmptyValue(true);
+                    continue;
+                }
                 double value = calculate.apply(valueL.getDoubleValue(), valueR.getDoubleValue(), opType);
                 valueL.setDoubleValue(value);
-                valueL.setEmptyValue(false);
             }
         }
 
@@ -147,9 +157,13 @@ public interface LROp {
     //series or list or labeled single value with scalar
     private static ExpressionResult many2OneBinaryOp(ExpressionResult manyResult,
                                                      ExpressionResult singleResult,
-                                                     int opType, LROp calculate) {
-        manyResult.getResults().forEach(mqeValues -> {
-            mqeValues.getValues().forEach(mqeValue -> {
+                                                     int opType, LROp calculate) throws IllegalExpressionException {
+        if (singleResult.getResults().isEmpty() ||
+            singleResult.getResults().get(0).getValues().size() != 1) {
+            throw new IllegalExpressionException("Many to One, single result is empty or has more than one value.");
+        }
+        for (MQEValues mqeValues : manyResult.getResults()) {
+            for (MQEValue mqeValue : mqeValues.getValues()) {
                 if (!mqeValue.isEmptyValue()) {
                     double newValue = calculate.apply(
                         mqeValue.getDoubleValue(), singleResult.getResults()
@@ -159,17 +173,21 @@ public interface LROp {
                                                                .getDoubleValue(), opType);
                     mqeValue.setDoubleValue(newValue);
                 }
-            });
-        });
+            }
+        }
         return manyResult;
     }
 
     //scalar with series or list or labeled single value
     private static ExpressionResult one2ManyBinaryOp(ExpressionResult singleResult,
                                                      ExpressionResult manyResult,
-                                                     int opType, LROp calculate) {
-        manyResult.getResults().forEach(mqeValues -> {
-            mqeValues.getValues().forEach(mqeValue -> {
+                                                     int opType, LROp calculate) throws IllegalExpressionException {
+        if (singleResult.getResults().isEmpty() ||
+            singleResult.getResults().get(0).getValues().size() != 1) {
+            throw new IllegalExpressionException("One to Many, single result is empty or has more than one value.");
+        }
+        for (MQEValues mqeValues : manyResult.getResults()) {
+            for (MQEValue mqeValue : mqeValues.getValues()) {
                 if (!mqeValue.isEmptyValue()) {
                     double newValue = calculate.apply(
                         singleResult.getResults()
@@ -181,24 +199,28 @@ public interface LROp {
                     );
                     mqeValue.setDoubleValue(newValue);
                 }
-            });
-        });
+            }
+        }
         return manyResult;
     }
 
     private static ExpressionResult seriesNoLabeled(ExpressionResult seriesLeft,
                                                     ExpressionResult seriesRight,
-                                                    int opType, LROp calculate) {
+                                                    int opType, LROp calculate) throws IllegalExpressionException {
+        if (seriesLeft.getResults().isEmpty() || seriesRight.getResults().isEmpty()) {
+            throw new IllegalExpressionException("Series No Labeled, left or right result is empty.");
+        }
         MQEValues mqeValuesL = seriesLeft.getResults().get(0);
         MQEValues mqeValuesR = seriesRight.getResults().get(0);
-        mqeValuesL.setMetric(null);
+        if (mqeValuesL.getValues().size() != mqeValuesR.getValues().size()) {
+            throw new IllegalExpressionException("Series No Labeled, left and right series value size not equal.");
+        }
         for (int i = 0; i < mqeValuesL.getValues().size(); i++) {
             //clean metric info
             MQEValue valueL = mqeValuesL.getValues().get(i);
             MQEValue valueR = mqeValuesR.getValues().get(i);
             if (valueL.isEmptyValue() || valueR.isEmptyValue()) {
                 valueL.setEmptyValue(true);
-                valueL.setDoubleValue(0);
                 continue;
             }
             //time should be mapped
@@ -211,44 +233,54 @@ public interface LROp {
 
     private static ExpressionResult seriesLabeledWithNoLabeled(ExpressionResult seriesLeft,
                                                                ExpressionResult seriesRight,
-                                                               int opType, LROp calculate) {
+                                                               int opType, LROp calculate) throws IllegalExpressionException {
+        if (seriesRight.getResults().isEmpty()) {
+            throw new IllegalExpressionException("Series Labeled with No Labeled, no labeled result is empty.");
+        }
         MQEValues mqeValuesR = seriesRight.getResults().get(0);
-        seriesLeft.getResults().forEach(mqeValuesL -> {
+        for (MQEValues mqeValuesL : seriesLeft.getResults()) {
+            if (mqeValuesL.getValues().size() != mqeValuesR.getValues().size()) {
+                throw new IllegalExpressionException("Series Labeled with No Labeled, left and right series value size not equal.");
+            }
             for (int i = 0; i < mqeValuesL.getValues().size(); i++) {
                 //reserve left metric info
                 MQEValue valueL = mqeValuesL.getValues().get(i);
                 MQEValue valueR = mqeValuesR.getValues().get(i);
                 if (valueL.isEmptyValue() || valueR.isEmptyValue()) {
                     valueL.setEmptyValue(true);
-                    valueL.setDoubleValue(0);
                     continue;
                 }
                 double newValue = calculate.apply(valueL.getDoubleValue(), valueR.getDoubleValue(), opType);
                 mqeValuesL.getValues().get(i).setDoubleValue(newValue);
             }
-        });
+        }
 
         return seriesLeft;
     }
 
     private static ExpressionResult seriesNoLabeledWithLabeled(ExpressionResult seriesLeft,
                                                                ExpressionResult seriesRight,
-                                                               int opType, LROp calculate) {
+                                                               int opType, LROp calculate) throws IllegalExpressionException {
+        if (seriesLeft.getResults().isEmpty()) {
+            throw new IllegalExpressionException("Series No Labeled with Labeled, no labeled result is empty.");
+        }
         MQEValues mqeValuesL = seriesLeft.getResults().get(0);
-        seriesRight.getResults().forEach(mqeValuesR -> {
+        for (MQEValues mqeValuesR : seriesRight.getResults()) {
+            if (mqeValuesL.getValues().size() != mqeValuesR.getValues().size()) {
+                throw new IllegalExpressionException("Series No Labeled with Labeled, left and right series value size not equal.");
+            }
             for (int i = 0; i < mqeValuesL.getValues().size(); i++) {
                 //reserve left metric info
                 MQEValue valueL = mqeValuesL.getValues().get(i);
                 MQEValue valueR = mqeValuesR.getValues().get(i);
                 if (valueL.isEmptyValue() || valueR.isEmptyValue()) {
                     valueL.setEmptyValue(true);
-                    valueL.setDoubleValue(0);
                     continue;
                 }
                 double newValue = calculate.apply(valueL.getDoubleValue(), valueR.getDoubleValue(), opType);
                 mqeValuesR.getValues().get(i).setDoubleValue(newValue);
             }
-        });
+        }
 
         return seriesRight;
     }
@@ -256,32 +288,29 @@ public interface LROp {
     private static ExpressionResult seriesLabeledWithLabeled(ExpressionResult seriesLeft,
                                                              ExpressionResult seriesRight,
                                                              int opType, LROp calculate) throws IllegalExpressionException {
-        Map<KeyValue, List<MQEValue>> labelMapR = new HashMap<>();
-        if (seriesLeft.getResults().size() != seriesRight.getResults().size()) {
-            throw new IllegalExpressionException(
-                "Operation between labeled metrics should have the same label.");
-        }
+        Map<Set<KeyValue>, List<MQEValue>> labelMapR = new HashMap<>();
         seriesRight.getResults().forEach(mqeValuesR -> {
-            // For now, we only have a single anonymous label named `_`
-            labelMapR.put(mqeValuesR.getMetric().getLabels().get(0), mqeValuesR.getValues());
+            labelMapR.put(new HashSet<>(mqeValuesR.getMetric().getLabels()), mqeValuesR.getValues());
         });
         for (MQEValues mqeValuesL : seriesLeft.getResults()) {
             for (int i = 0; i < mqeValuesL.getValues().size(); i++) {
-                //reserve left metric info
+                //reserve left metric info, if right metric not exist, set empty value
                 MQEValue valueL = mqeValuesL.getValues().get(i);
-                List<MQEValue> mqeValuesR = labelMapR.get(mqeValuesL.getMetric().getLabels().get(0));
+                List<MQEValue> mqeValuesR = labelMapR.get(new HashSet<>(mqeValuesL.getMetric().getLabels()));
                 if (mqeValuesR == null) {
-                    throw new IllegalExpressionException(
-                        "Operation between labeled metrics should have the same label.");
-                }
-                MQEValue valueR = mqeValuesR.get(i);
-                if (valueL.isEmptyValue() || valueR.isEmptyValue()) {
                     valueL.setEmptyValue(true);
-                    valueL.setDoubleValue(0);
-                    continue;
+                } else {
+                    if (mqeValuesR.size() != mqeValuesL.getValues().size()) {
+                        throw new IllegalExpressionException("Series Labeled with Labeled, left and right series value size not equal.");
+                    }
+                    MQEValue valueR = mqeValuesR.get(i);
+                    if (valueL.isEmptyValue() || valueR.isEmptyValue()) {
+                        valueL.setEmptyValue(true);
+                        continue;
+                    }
+                    double newValue = calculate.apply(valueL.getDoubleValue(), valueR.getDoubleValue(), opType);
+                    mqeValuesL.getValues().get(i).setDoubleValue(newValue);
                 }
-                double newValue = calculate.apply(valueL.getDoubleValue(), valueR.getDoubleValue(), opType);
-                mqeValuesL.getValues().get(i).setDoubleValue(newValue);
             }
         }
 

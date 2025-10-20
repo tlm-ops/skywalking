@@ -21,6 +21,7 @@ package org.apache.skywalking.oap.server.storage.plugin.elasticsearch.base;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
+import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.skywalking.library.elasticsearch.response.Index;
@@ -81,12 +82,15 @@ public class StorageEsInstaller extends ModelInstaller {
     }
 
     @Override
-    public boolean isExists(Model model) throws StorageException {
+    public InstallInfo isExists(Model model) throws StorageException {
+        InstallInfoES installInfo = new InstallInfoES(model, config);
         ElasticSearchClient esClient = (ElasticSearchClient) client;
         String tableName = IndexController.INSTANCE.getTableName(model);
         IndexController.LogicIndicesRegister.registerRelation(model, tableName);
+        installInfo.setTableName(esClient.formatIndexName(tableName));
         if (!model.isTimeSeries()) {
             boolean exist = esClient.isExistsIndex(tableName);
+            installInfo.setTableExist(exist);
             if (exist) {
                 Optional<Index> index = esClient.getIndex(tableName);
                 Mappings historyMapping = index.map(Index::getMappings).orElseGet(Mappings::new);
@@ -97,15 +101,21 @@ public class StorageEsInstaller extends ModelInstaller {
                     // or updating field types, it just cares about whether the data can be ingested without
                     // reporting errors.
                     exist = structures.containsFieldNames(tableName, createMapping(model));
+                    installInfo.setAllFieldsExist(exist);
                 } else {
                     boolean containsMapping = structures.containsMapping(tableName, createMapping(model));
-                    exist = containsMapping && structures.compareIndexSetting(tableName, createSetting(model));
+                    installInfo.setAllFieldsExist(containsMapping);
+                    boolean containsSetting = structures.compareIndexSetting(tableName, createSetting(model));
+                    installInfo.setAllIndexSettingsExist(containsSetting);
+                    exist = containsMapping && containsSetting;
                 }
             }
-            return exist;
+            installInfo.setAllExist(exist);
+            return installInfo;
         }
 
         boolean templateExists = esClient.isExistsTemplate(tableName);
+        installInfo.setTableExist(templateExists);
         final Optional<IndexTemplate> template = esClient.getTemplate(tableName);
 
         if ((templateExists && template.isEmpty()) || (!templateExists && template.isPresent())) {
@@ -123,12 +133,17 @@ public class StorageEsInstaller extends ModelInstaller {
             // because the no-init mode OAP server doesn't take responsibility for index settings.
             if (RunningMode.isNoInitMode()) {
                 exist = structures.containsFieldNames(tableName, createMapping(model));
+                installInfo.setAllFieldsExist(exist);
             } else {
                 boolean containsMapping = structures.containsMapping(tableName, createMapping(model));
-                exist = containsMapping && structures.compareIndexSetting(tableName, createSetting(model));
+                installInfo.setAllFieldsExist(containsMapping);
+                boolean containsSetting = structures.compareIndexSetting(tableName, createSetting(model));
+                installInfo.setAllIndexSettingsExist(containsSetting);
+                exist = containsMapping && containsSetting;
             }
         }
-        return exist;
+        installInfo.setAllExist(exist);
+        return installInfo;
     }
 
     @Override
@@ -255,7 +270,7 @@ public class StorageEsInstaller extends ModelInstaller {
         if (!CollectionUtils.isEmpty(specificSettings)) {
             indexSettings.putAll(specificSettings);
         }
-        
+
         return setting;
     }
 
@@ -266,7 +281,9 @@ public class StorageEsInstaller extends ModelInstaller {
     //When adding a new model(with an analyzer) into an existed index by update will be failed, if the index is without analyzer settings.
     //To avoid this, add the analyzer settings to the template before index creation.
     private Map getAnalyzerSetting(Model model) throws StorageException {
-        if (config.isLogicSharding() || !model.isTimeSeries()) {
+        if (!model.isTimeSeries()) {
+            return getAnalyzerSetting4MergedIndex(model);
+        } else if (config.isLogicSharding()) {
             return getAnalyzerSettingByColumn(model);
         } else if (model.isRecord() && model.isSuperDataset()) {
             //SuperDataset doesn't merge index, the analyzer follow the column config.
@@ -303,40 +320,50 @@ public class StorageEsInstaller extends ModelInstaller {
     }
 
     protected Mappings createMapping(Model model) {
-        Map<String, Object> properties = new HashMap<>();
-        Mappings.Source source = new Mappings.Source();
+        final var properties = new HashMap<String, Object>();
+        final var source = new Mappings.Source();
         for (ModelColumn columnDefine : model.getColumns()) {
-            final String type = columnTypeEsMapping.transform(columnDefine.getType(), columnDefine.getGenericType(), columnDefine.getElasticSearchExtension());
-            String columnName = columnDefine.getColumnName().getName();
-            String legacyName = columnDefine.getElasticSearchExtension().getLegacyColumnName();
+            final var elasticSearchExtension = columnDefine.getElasticSearchExtension();
+            final String type = columnTypeEsMapping.transform(columnDefine.getType(), columnDefine.getGenericType(),
+                columnDefine.getLength(), columnDefine.isStorageOnly(),
+                elasticSearchExtension);
+            var columnName = columnDefine.getColumnName().getName();
+            final var legacyName = elasticSearchExtension.getLegacyColumnName();
+            final var columnProperties = new HashMap<>();
             if (config.isLogicSharding() && !Strings.isNullOrEmpty(legacyName)) {
                 columnName = legacyName;
             }
-            if (columnDefine.getElasticSearchExtension().needMatchQuery()) {
+            if (elasticSearchExtension.needMatchQuery()) {
                 String matchCName = MatchCNameBuilder.INSTANCE.build(columnName);
 
-                Map<String, Object> originalColumn = new HashMap<>();
-                originalColumn.put("type", type);
-                originalColumn.put("copy_to", matchCName);
-                properties.put(columnName, originalColumn);
+                columnProperties.put("type", type);
+                columnProperties.put("copy_to", matchCName);
 
                 Map<String, Object> matchColumn = new HashMap<>();
                 matchColumn.put("type", "text");
-                matchColumn.put("analyzer", columnDefine.getElasticSearchExtension().getAnalyzer().getName());
+                matchColumn.put("analyzer", elasticSearchExtension.getAnalyzer().getName());
                 properties.put(matchCName, matchColumn);
             } else {
-                Map<String, Object> column = new HashMap<>();
-                column.put("type", type);
+                columnProperties.put("type", type);
                 // no index parameter is allowed for binary type, since ES 8.0
                 if (columnDefine.isStorageOnly() && !"binary".equals(type)) {
-                    column.put("index", false);
+                    columnProperties.put("index", false);
                 }
-                properties.put(columnName, column);
             }
+            if (!"text".equals(type) && !elasticSearchExtension.isDocValuesEnabled()) {
+                columnProperties.put("doc_values", false);
+            }
+            properties.put(columnName, columnProperties);
 
             if (columnDefine.isIndexOnly()) {
                 source.getExcludes().add(columnName);
             }
+        }
+
+        if (!model.isTimeSeries()) {
+            Map<String, Object> column = new HashMap<>();
+            column.put("type", "keyword");
+            properties.put(IndexController.LogicIndicesRegister.MANAGEMENT_TABLE_NAME, column);
         }
 
         if ((model.isMetric() && !config.isLogicSharding())
@@ -355,8 +382,44 @@ public class StorageEsInstaller extends ModelInstaller {
                                     .properties(properties)
                                     .source(source)
                                     .build();
-        log.debug("elasticsearch index template setting: {}", mappings.toString());
+        if (log.isDebugEnabled()) {
+            log.debug("elasticsearch index template setting: {}", mappings.toString());
+        }
 
         return mappings;
+    }
+
+    @Getter
+    @Setter
+    public static class InstallInfoES extends InstallInfo {
+        private String tableName;
+        private boolean tableExist;
+        private boolean allFieldsExist;
+        private boolean allIndexSettingsExist;
+        private StorageModuleElasticsearchConfig config;
+
+        protected InstallInfoES(Model model, StorageModuleElasticsearchConfig config) {
+            super(model);
+            this.config = config;
+        }
+
+        @Override
+        public String buildInstallInfoMsg() {
+            String tableNameMsg = isTimeSeries() ? "indexTemplateName=" + tableName : "indexName=" + tableName;
+            String tableExistMsg = isTimeSeries() ? "indexTemplateExists=" + tableExist : "indexExists=" + tableExist;
+            return "InstallInfoES:{" +
+                "modelName=" + getModelName() +
+                ", modelType=" + getModelType() +
+                ", timeSeries=" + isTimeSeries() +
+                ", superDataset=" + isSuperDataset() +
+                ", logicSharding=" + config.isLogicSharding() +
+                ", indexNamespace=" + config.getNamespace() +
+                ", " + tableNameMsg +
+                ", allResourcesExist=" + isAllExist() +
+                " [" + tableExistMsg +
+                ", allFieldsExist=" + allFieldsExist +
+                ", allIndexSettingsExist=" + allIndexSettingsExist +
+                "]}";
+        }
     }
 }

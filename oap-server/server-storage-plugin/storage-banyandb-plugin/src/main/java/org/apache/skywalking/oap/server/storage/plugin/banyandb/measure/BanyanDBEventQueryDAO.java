@@ -25,11 +25,15 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 import org.apache.skywalking.banyandb.v1.client.AbstractCriteria;
+import org.apache.skywalking.banyandb.v1.client.AbstractQuery;
 import org.apache.skywalking.banyandb.v1.client.DataPoint;
 import org.apache.skywalking.banyandb.v1.client.MeasureQuery;
 import org.apache.skywalking.banyandb.v1.client.MeasureQueryResponse;
 import org.apache.skywalking.banyandb.v1.client.PairQueryCondition;
+import org.apache.skywalking.banyandb.v1.client.TimestampRange;
+import org.apache.skywalking.oap.server.core.analysis.DownSampling;
 import org.apache.skywalking.oap.server.core.analysis.Layer;
+import org.apache.skywalking.oap.server.core.analysis.TimeBucket;
 import org.apache.skywalking.oap.server.core.query.PaginationUtils;
 import org.apache.skywalking.oap.server.core.query.enumeration.Order;
 import org.apache.skywalking.oap.server.core.query.input.Duration;
@@ -40,6 +44,7 @@ import org.apache.skywalking.oap.server.core.query.type.event.Source;
 import org.apache.skywalking.oap.server.core.analysis.metrics.Event;
 import org.apache.skywalking.oap.server.core.storage.query.IEventQueryDAO;
 import org.apache.skywalking.oap.server.storage.plugin.banyandb.BanyanDBStorageClient;
+import org.apache.skywalking.oap.server.storage.plugin.banyandb.MetadataRegistry;
 import org.apache.skywalking.oap.server.storage.plugin.banyandb.stream.AbstractBanyanDBDAO;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -56,8 +61,18 @@ public class BanyanDBEventQueryDAO extends AbstractBanyanDBDAO implements IEvent
 
     @Override
     public Events queryEvents(EventQueryCondition condition) throws Exception {
-        MeasureQueryResponse resp = query(Event.INDEX_NAME, TAGS,
-                Collections.emptySet(), buildQuery(Collections.singletonList(condition)));
+        MetadataRegistry.Schema schema = MetadataRegistry.INSTANCE.findMetadata(Event.INDEX_NAME, DownSampling.Minute);
+        final Duration time = condition.getTime();
+        TimestampRange tsRange = null;
+        if (time != null) {
+            long startTB = time.getStartTimeBucketInSec();
+            long endTB = time.getEndTimeBucketInSec();
+            if (startTB > 0 && endTB > 0) {
+                tsRange = new TimestampRange(TimeBucket.getTimestamp(startTB), TimeBucket.getTimestamp(endTB));
+            }
+        }
+        MeasureQueryResponse resp = query(schema, TAGS,
+                Collections.emptySet(), tsRange, buildQuery(Collections.singletonList(condition)));
         Events events = new Events();
         if (resp.size() == 0) {
             return events;
@@ -70,8 +85,19 @@ public class BanyanDBEventQueryDAO extends AbstractBanyanDBDAO implements IEvent
 
     @Override
     public Events queryEvents(List<EventQueryCondition> conditionList) throws Exception {
-        MeasureQueryResponse resp = query(Event.INDEX_NAME, TAGS,
-                Collections.emptySet(), buildQuery(conditionList));
+        MetadataRegistry.Schema schema = MetadataRegistry.INSTANCE.findMetadata(Event.INDEX_NAME, DownSampling.Minute);
+        // Duration should be same for all conditions
+        final Duration time = conditionList.get(0).getTime();
+        TimestampRange tsRange = null;
+        if (time != null) {
+            long startTB = time.getStartTimeBucketInSec();
+            long endTB = time.getEndTimeBucketInSec();
+            if (startTB > 0 && endTB > 0) {
+                tsRange = new TimestampRange(TimeBucket.getTimestamp(startTB), TimeBucket.getTimestamp(endTB));
+            }
+        }
+        MeasureQueryResponse resp = query(schema, TAGS,
+                Collections.emptySet(), tsRange, buildQuery(conditionList));
         Events events = new Events();
         if (resp.size() == 0) {
             return events;
@@ -94,9 +120,11 @@ public class BanyanDBEventQueryDAO extends AbstractBanyanDBDAO implements IEvent
                 query.limit(page.getLimit());
                 query.offset(page.getFrom());
                 if (queryOrder == Order.ASC) {
-                    query.setOrderBy(asc(Event.START_TIME));
+                    query.setOrderBy(
+                        new AbstractQuery.OrderBy(Event.START_TIME, AbstractQuery.Sort.ASC));
                 } else {
-                    query.setOrderBy(desc(Event.START_TIME));
+                    query.setOrderBy(
+                        new AbstractQuery.OrderBy(Event.START_TIME, AbstractQuery.Sort.DESC));
                 }
                 for (final EventQueryCondition condition : conditionList) {
                     List<PairQueryCondition<?>> queryConditions = new ArrayList<>();
@@ -124,16 +152,6 @@ public class BanyanDBEventQueryDAO extends AbstractBanyanDBDAO implements IEvent
                         queryConditions.add(eq(Event.TYPE, condition.getType().name()));
                     }
 
-                    final Duration startTime = condition.getTime();
-                    if (startTime != null) {
-                        if (startTime.getStartTimestamp() > 0) {
-                            queryConditions.add(gte(Event.START_TIME, startTime.getStartTimestamp()));
-                        }
-                        if (startTime.getEndTimestamp() > 0) {
-                            queryConditions.add(lte(Event.END_TIME, startTime.getEndTimestamp()));
-                        }
-                    }
-
                     if (!isNullOrEmpty(condition.getLayer())) {
                         queryConditions.add(eq(Event.LAYER, Layer.valueOf(condition.getLayer()).value()));
                     }
@@ -155,9 +173,9 @@ public class BanyanDBEventQueryDAO extends AbstractBanyanDBDAO implements IEvent
 
         event.setUuid(dataPoint.getTagValue(Event.UUID));
 
-        String service = dataPoint.getTagValue(Event.SERVICE);
-        String serviceInstance = dataPoint.getTagValue(Event.SERVICE_INSTANCE);
-        String endpoint = dataPoint.getTagValue(Event.ENDPOINT);
+        String service = getValueOrDefault(dataPoint, Event.SERVICE, "");
+        String serviceInstance = getValueOrDefault(dataPoint, Event.SERVICE_INSTANCE, "");
+        String endpoint = getValueOrDefault(dataPoint, Event.ENDPOINT, "");
         event.setSource(new Source(service, serviceInstance, endpoint));
 
         event.setName(dataPoint.getTagValue(Event.NAME));
@@ -171,4 +189,9 @@ public class BanyanDBEventQueryDAO extends AbstractBanyanDBDAO implements IEvent
 
         return event;
     }
+
+    private <T> T getValueOrDefault(DataPoint dataPoint, String tagName, T defaultValue) {
+        T v = dataPoint.getTagValue(tagName);
+        return v == null ? defaultValue : v;
+    } 
 }

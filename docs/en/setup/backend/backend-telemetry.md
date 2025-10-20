@@ -1,11 +1,11 @@
 # Telemetry for backend
 The OAP backend cluster itself is a distributed streaming process system. To assist the Ops team, we provide the telemetry for the OAP backend itself, also known as self-observability (so11y)
 
-By default, the telemetry is disabled by setting `selector` to `none`, like this:
+By default, the telemetry is activated as setting `selector` to `prometheus`.
 
 ```yaml
 telemetry:
-  selector: ${SW_TELEMETRY:none}
+  selector: ${SW_TELEMETRY:prometheus}
   none:
   prometheus:
     host: ${SW_TELEMETRY_PROMETHEUS_HOST:0.0.0.0}
@@ -15,7 +15,7 @@ telemetry:
     sslCertChainPath: ${SW_TELEMETRY_PROMETHEUS_SSL_CERT_CHAIN_PATH:""}
 ```
 
-You may also set `Prometheus` to enable them. For more information, refer to the details below.
+Besides the self observability, this supports [OAP circuit breaking](circuit-breaking.md) functionality.
 
 ## Self Observability
 SkyWalking supports exposing telemetry data representing OAP running status through Prometheus endpoint.
@@ -45,7 +45,7 @@ adjust the configurations below to fit your scenarios.
 
 If you deploy an OAP server cluster on Kubernetes, the oap-server instance (pod) would not have a static IP or hostname. We can leverage [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/getting-started/#kubernetes) to discover the oap-server instance, and scrape & transfer the metrics to OAP [OpenTelemetry receiver](opentelemetry-receiver.md).
 
-On how to install SkyWalking on k8s, you can refer to [Apache SkyWalking Kubernetes](https://github.com/apache/skywalking-kubernetes).
+On how to install SkyWalking on k8s, you can refer to [Apache SkyWalking Kubernetes](https://github.com/apache/skywalking-helm).
 
 Set this up following these steps:
 
